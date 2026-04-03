@@ -1,172 +1,173 @@
-// Report Generation Functions - Excel (.xlsx) Version
-import * as XLSX from 'xlsx';
+// Report Generation Functions - PDF Version (Stock Availability)
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export function generateComprehensiveReport(motorType, components, requirements, maxProduction, criticalComponent, withdrawQty) {
-  const timestamp = new Date().toLocaleString();
+  const doc = new jsPDF();
   const date = new Date().toISOString().split('T')[0];
+  const timestamp = new Date().toLocaleString();
 
-  // Calculate all metrics
+  // ─── Header ───────────────────────────────────────────────────
+  doc.setFillColor(44, 62, 80);
+  doc.rect(0, 0, 210, 30, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Solar Pump BOS Inventory Management System', 105, 12, { align: 'center' });
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Stock Availability Report — ${motorType} Motor`, 105, 22, { align: 'center' });
+
+  // ─── Meta Info ────────────────────────────────────────────────
+  doc.setTextColor(80, 80, 80);
+  doc.setFontSize(9);
+  doc.text(`Generated: ${timestamp}`, 14, 38);
+  doc.text(`Motor Type: ${motorType}`, 14, 44);
+  doc.text(`Max Production Capacity: ${maxProduction} motors`, 14, 50);
+  if (criticalComponent) {
+    doc.setTextColor(180, 50, 50);
+    doc.text(`Critical Component: ${criticalComponent}`, 14, 56);
+  }
+
+  // ─── Summary Boxes ────────────────────────────────────────────
   const totalAvailable = components.reduce((sum, c) => sum + c.quantity, 0);
-  const totalUsed = withdrawQty > 0 ? requirements.reduce((sum, req) => sum + (req.required_quantity * withdrawQty), 0) : 0;
+  const totalUsed = withdrawQty > 0
+    ? requirements.reduce((sum, req) => sum + req.required_quantity * withdrawQty, 0)
+    : 0;
   const totalRemaining = totalAvailable - totalUsed;
-  const efficiency = totalAvailable > 0 ? ((totalUsed / totalAvailable) * 100).toFixed(2) : 0;
-
-  // Identify shortages and low stock
-  const shortages = [];
-  const lowStock = [];
-
-  requirements.forEach(req => {
+  const shortagesCount = requirements.filter(req => {
     const comp = components.find(c => c.id === req.component_id);
-    if (comp) {
-      const needed = req.required_quantity * withdrawQty;
-      if (comp.quantity < needed && withdrawQty > 0) {
-        shortages.push({
-          name: comp.name,
-          available: comp.quantity,
-          needed: needed,
-          shortage: needed - comp.quantity
-        });
-      }
-      if (comp.quantity < req.required_quantity) {
-        lowStock.push({
-          name: comp.name,
-          available: comp.quantity,
-          required: req.required_quantity
-        });
-      }
-    }
+    return comp && comp.quantity < req.required_quantity;
+  }).length;
+
+  const boxes = [
+    { label: 'Total Stock', value: totalAvailable.toFixed(0), color: [52, 152, 219] },
+    { label: 'Used', value: totalUsed.toFixed(0), color: [230, 126, 34] },
+    { label: 'Remaining', value: totalRemaining.toFixed(0), color: [39, 174, 96] },
+    { label: 'Low/Out of Stock', value: shortagesCount, color: [231, 76, 60] },
+  ];
+
+  const startY = criticalComponent ? 64 : 58;
+  boxes.forEach((box, i) => {
+    const x = 14 + i * 47;
+    doc.setFillColor(...box.color);
+    doc.roundedRect(x, startY, 43, 18, 3, 3, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(String(box.value), x + 21.5, startY + 10, { align: 'center' });
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text(box.label, x + 21.5, startY + 16, { align: 'center' });
   });
 
-  const wb = XLSX.utils.book_new();
+  // ─── Stock Availability Table ──────────────────────────────────
+  const tableStartY = startY + 26;
 
-  // ─── Sheet 1: Summary ───────────────────────────────────────────
-  const summaryData = [
-    ['SOLAR PUMP BOS INVENTORY MANAGEMENT SYSTEM'],
-    ['Production Analysis & Feasibility Report'],
-    [],
-    ['Motor Type', motorType],
-    ['Report Generated', timestamp],
-    ['Production Quantity', withdrawQty + ' motors'],
-    [],
-    ['SUMMARY'],
-    ['Total Components', components.length],
-    ['Total Available Stock', parseFloat(totalAvailable.toFixed(2))],
-    ['Total Stock to be Used', parseFloat(totalUsed.toFixed(2))],
-    ['Remaining Stock', parseFloat(totalRemaining.toFixed(2))],
-    ['Maximum Production Capacity', maxProduction + ' motors'],
-    ['Production Efficiency', efficiency + '%'],
-    ['Production Status', shortages.length === 0 ? 'FEASIBLE' : 'NOT FEASIBLE'],
-    ['Shortage Components', shortages.length],
-    ['Low Stock Components', lowStock.length],
-  ];
-  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-  wsSummary['!cols'] = [{ wch: 30 }, { wch: 30 }];
-  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+  doc.setTextColor(44, 62, 80);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Stock Availability', 14, tableStartY);
 
-  // ─── Sheet 2: Component Analysis ────────────────────────────────
-  const compHeaders = [
-    'Component Name',
-    'Unit',
-    'Required per Motor',
-    'Available Stock',
-    'Used',
-    'Remaining',
-    'Can Produce (motors)',
-    'Critical?',
-    'Status'
-  ];
-
-  const compRows = requirements.map(req => {
+  const tableRows = requirements.map(req => {
     const comp = components.find(c => c.id === req.component_id);
-    if (!comp) return [];
+    if (!comp) return null;
+
+    const canProduce = Math.floor(comp.quantity / req.required_quantity);
     const used = parseFloat((req.required_quantity * withdrawQty).toFixed(2));
     const remaining = parseFloat((comp.quantity - used).toFixed(2));
-    const canProduce = Math.floor(comp.quantity / req.required_quantity);
-    const isCritical = comp.name === criticalComponent ? 'YES ★' : 'No';
-    const status = comp.quantity === 0 ? 'OUT OF STOCK'
-      : comp.quantity < req.required_quantity ? 'CRITICALLY LOW'
-      : comp.quantity < req.required_quantity * 5 ? 'LOW'
-      : 'OK';
 
-    return [
-      comp.name,
-      comp.unit,
-      req.required_quantity,
-      comp.quantity,
-      used,
-      remaining,
-      canProduce,
-      isCritical,
-      status
-    ];
+    let status = 'OK';
+    let statusColor = [39, 174, 96];
+    if (comp.quantity === 0) {
+      status = 'OUT OF STOCK';
+      statusColor = [231, 76, 60];
+    } else if (comp.quantity < req.required_quantity) {
+      status = 'CRITICALLY LOW';
+      statusColor = [231, 76, 60];
+    } else if (comp.quantity < req.required_quantity * 5) {
+      status = 'LOW';
+      statusColor = [230, 126, 34];
+    }
+
+    return {
+      row: [
+        comp.name,
+        comp.unit,
+        req.required_quantity,
+        comp.quantity,
+        used > 0 ? used : '-',
+        remaining !== comp.quantity ? remaining : '-',
+        canProduce,
+        status
+      ],
+      statusColor
+    };
+  }).filter(Boolean);
+
+  autoTable(doc, {
+    startY: tableStartY + 4,
+    head: [['Component Name', 'Unit', 'Req/Motor', 'Available', 'Used', 'Remaining', 'Can Produce', 'Status']],
+    body: tableRows.map(r => r.row),
+    headStyles: {
+      fillColor: [44, 62, 80],
+      textColor: 255,
+      fontStyle: 'bold',
+      fontSize: 8,
+    },
+    bodyStyles: {
+      fontSize: 7.5,
+      textColor: [50, 50, 50],
+    },
+    alternateRowStyles: {
+      fillColor: [245, 245, 245],
+    },
+    columnStyles: {
+      0: { cellWidth: 50 },
+      1: { cellWidth: 12 },
+      2: { cellWidth: 18, halign: 'center' },
+      3: { cellWidth: 20, halign: 'center' },
+      4: { cellWidth: 16, halign: 'center' },
+      5: { cellWidth: 20, halign: 'center' },
+      6: { cellWidth: 22, halign: 'center' },
+      7: { cellWidth: 22, halign: 'center' },
+    },
+    didDrawCell: (data) => {
+      if (data.column.index === 7 && data.section === 'body') {
+        const rowData = tableRows[data.row.index];
+        if (rowData) {
+          const [r, g, b] = rowData.statusColor;
+          doc.setFillColor(r, g, b);
+          doc.setTextColor(255, 255, 255);
+          doc.roundedRect(data.cell.x + 1, data.cell.y + 1, data.cell.width - 2, data.cell.height - 2, 2, 2, 'F');
+          doc.setFontSize(7);
+          doc.text(
+            String(data.cell.raw),
+            data.cell.x + data.cell.width / 2,
+            data.cell.y + data.cell.height / 2 + 1,
+            { align: 'center' }
+          );
+        }
+      }
+    },
+    margin: { left: 14, right: 14 },
   });
 
-  const wsComponents = XLSX.utils.aoa_to_sheet([compHeaders, ...compRows]);
-  wsComponents['!cols'] = [
-    { wch: 32 }, { wch: 8 }, { wch: 18 }, { wch: 16 },
-    { wch: 10 }, { wch: 12 }, { wch: 20 }, { wch: 12 }, { wch: 15 }
-  ];
-  XLSX.utils.book_append_sheet(wb, wsComponents, 'Component Analysis');
+  // ─── Footer ───────────────────────────────────────────────────
+  const pageHeight = doc.internal.pageSize.height;
+  doc.setFillColor(44, 62, 80);
+  doc.rect(0, pageHeight - 10, 210, 10, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(7);
+  doc.text(`Solar Pump Inventory System — ${date}`, 105, pageHeight - 4, { align: 'center' });
 
-  // ─── Sheet 3: Shortages ─────────────────────────────────────────
-  const shortageHeaders = ['Component Name', 'Available', 'Required', 'Shortage'];
-  const shortageRows = shortages.length > 0
-    ? shortages.map(s => [s.name, s.available, parseFloat(s.needed.toFixed(2)), parseFloat(s.shortage.toFixed(2))])
-    : [['No shortages detected', '', '', '']];
-  const wsShortages = XLSX.utils.aoa_to_sheet([shortageHeaders, ...shortageRows]);
-  wsShortages['!cols'] = [{ wch: 32 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
-  XLSX.utils.book_append_sheet(wb, wsShortages, 'Shortages');
-
-  // ─── Sheet 4: Low Stock ─────────────────────────────────────────
-  const lowStockHeaders = ['Component Name', 'Available', 'Required per Motor', 'Status'];
-  const lowStockRows = lowStock.length > 0
-    ? lowStock.map(s => [
-        s.name,
-        s.available,
-        s.required,
-        s.available === 0 ? 'OUT OF STOCK' : 'CRITICALLY LOW'
-      ])
-    : [['All components above minimum threshold', '', '', '']];
-  const wsLowStock = XLSX.utils.aoa_to_sheet([lowStockHeaders, ...lowStockRows]);
-  wsLowStock['!cols'] = [{ wch: 32 }, { wch: 12 }, { wch: 20 }, { wch: 16 }];
-  XLSX.utils.book_append_sheet(wb, wsLowStock, 'Low Stock');
-
-  // ─── Sheet 5: Production Analysis ───────────────────────────────
-  const efficiencyRating =
-    parseFloat(efficiency) < 30 ? 'LOW (< 30%) - Good stock levels' :
-    parseFloat(efficiency) < 60 ? 'MODERATE (30-60%) - Balanced' :
-    parseFloat(efficiency) < 80 ? 'HIGH (60-80%) - Monitor stock' :
-    'CRITICAL (> 80%) - Restock immediately';
-
-  const feasibility =
-    withdrawQty === 0 ? 'No quantity specified' :
-    withdrawQty > maxProduction ? `NOT FEASIBLE - Exceeds capacity (${maxProduction})` :
-    shortages.length > 0 ? `NOT FEASIBLE - ${shortages.length} shortage(s)` :
-    'FEASIBLE ✓';
-
-  const prodData = [
-    ['PRODUCTION ANALYSIS'],
-    [],
-    ['Maximum Production Capacity', maxProduction + ' motors'],
-    ['Critical Component', criticalComponent || 'None'],
-    [],
-    ['Resource Utilization', efficiency + '%'],
-    ['Stock Used', parseFloat(totalUsed.toFixed(2))],
-    ['Total Stock', parseFloat(totalAvailable.toFixed(2))],
-    ['Remaining Stock', parseFloat(totalRemaining.toFixed(2))],
-    [],
-    ['Efficiency Rating', efficiencyRating],
-    ['Feasibility', feasibility],
-  ];
-  const wsProd = XLSX.utils.aoa_to_sheet(prodData);
-  wsProd['!cols'] = [{ wch: 30 }, { wch: 40 }];
-  XLSX.utils.book_append_sheet(wb, wsProd, 'Production Analysis');
-
-  return wb;
+  return doc;
 }
 
 export function downloadReport(motorType, components, requirements, maxProduction, criticalComponent, withdrawQty) {
-  const wb = generateComprehensiveReport(
+  const doc = generateComprehensiveReport(
     motorType,
     components,
     requirements,
@@ -177,7 +178,7 @@ export function downloadReport(motorType, components, requirements, maxProductio
 
   const date = new Date().toISOString().split('T')[0];
   const qty = withdrawQty > 0 ? `_${withdrawQty}motors` : '';
-  const filename = `${motorType}_Production_Report_${date}${qty}.xlsx`;
+  const filename = `${motorType}_Stock_Report_${date}${qty}.pdf`;
 
-  XLSX.writeFile(wb, filename);
+  doc.save(filename);
 }
