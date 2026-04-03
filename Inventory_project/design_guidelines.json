@@ -1,0 +1,144 @@
+{
+  "theme": "light",
+  "archetype": "Archetype 1: Organic & Earthy",
+  "domain": "Inventory Management Dashboard (Hardware/Solar Energy)",
+  "typography": {
+    "fonts": [
+      {
+        "role": "heading",
+        "family": "Outfit",
+        "fallback": "sans-serif",
+        "weights": ["500", "600", "700"]
+      },
+      {
+        "role": "body",
+        "family": "IBM Plex Sans",
+        "fallback": "sans-serif",
+        "weights": ["400", "500", "600"]
+      }
+    ],
+    "rules": {
+      "h1": "text-3xl sm:text-4xl font-semibold tracking-tight text-[#1E231D]",
+      "h2": "text-xl sm:text-2xl font-medium tracking-tight text-[#1E231D]",
+      "h3": "text-lg font-medium text-[#1E231D]",
+      "body": "text-sm text-[#596157] leading-relaxed",
+      "labels": "text-xs font-semibold uppercase tracking-[0.15em] text-[#596157]"
+    }
+  },
+  "colors": {
+    "background": {
+      "main": "#F5F5F0",
+      "card": "#FFFFFF",
+      "table_header": "#F0F0E8",
+      "glass": "rgba(255, 255, 255, 0.8)"
+    },
+    "border": {
+      "default": "#E2E2D9",
+      "focus": "#3A5C45"
+    },
+    "text": {
+      "primary": "#1E231D",
+      "secondary": "#596157",
+      "disabled": "#A0A89D",
+      "inverse": "#FFFFFF"
+    },
+    "brand": {
+      "primary": "#3A5C45",
+      "primary_hover": "#2D4836",
+      "secondary": "#E2E2D9",
+      "secondary_hover": "#D5D5CB"
+    },
+    "status": {
+      "success_bg": "#E8F0EA",
+      "success_text": "#2B593F",
+      "warning_bg": "#FDF3E1",
+      "warning_text": "#B36B00",
+      "danger_bg": "#FAECEB",
+      "danger_text": "#A33022"
+    }
+  },
+  "spacing_and_layout": {
+    "strategy": "The 'Control Room' Grid",
+    "container": "max-w-[1600px] mx-auto p-4 md:p-8",
+    "grid_system": {
+      "metrics_row": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8",
+      "main_content": "grid grid-cols-1 lg:grid-cols-12 gap-8",
+      "table_section": "lg:col-span-8",
+      "sidebar_section": "lg:col-span-4 flex flex-col gap-6"
+    },
+    "padding": {
+      "card": "p-6",
+      "table_cell": "px-4 py-3"
+    },
+    "radius": "rounded-xl"
+  },
+  "surface_strategies": {
+    "cards": "bg-white border border-[#E2E2D9] rounded-xl shadow-sm overflow-hidden",
+    "table": "w-full border-collapse text-left",
+    "table_header": "bg-[#F0F0E8] border-y border-[#E2E2D9] text-xs font-semibold uppercase tracking-wider text-[#596157]",
+    "table_row": "border-b border-[#E2E2D9] hover:bg-[#F9F9F7] transition-colors duration-150",
+    "inputs": "bg-white border border-[#E2E2D9] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3A5C45]/20 focus:border-[#3A5C45] transition-all"
+  },
+  "motion_and_interactions": {
+    "hover_states": {
+      "button": "hover:-translate-y-[1px] hover:shadow-md active:translate-y-0 transition-all duration-200",
+      "card": "hover:shadow-md transition-shadow duration-300"
+    },
+    "feedback": "Use micro-interactions for stock updates (e.g., subtle green flash on increment, red on decrement).",
+    "accessibility": "Ensure focus rings (ring-2 ring-primary/20) are visible on all interactive elements. Respect prefers-reduced-motion."
+  },
+  "components": {
+    "icons_library": "lucide-react",
+    "recommended_icons": [
+      "Package",
+      "AlertCircle",
+      "CheckCircle2",
+      "TrendingUp",
+      "Settings",
+      "Zap",
+      "ArrowDownToLine",
+      "Plus",
+      "Minus"
+    ],
+    "buttons": {
+      "primary": "bg-[#3A5C45] text-white hover:bg-[#2D4836] rounded-lg px-4 py-2 text-sm font-medium transition-all shadow-sm",
+      "secondary": "bg-white border border-[#E2E2D9] text-[#1E231D] hover:bg-[#F5F5F0] rounded-lg px-4 py-2 text-sm font-medium transition-all",
+      "danger": "bg-[#FAECEB] text-[#A33022] hover:bg-[#F3D8D5] rounded-lg px-4 py-2 text-sm font-medium transition-all"
+    },
+    "badges": {
+      "in_stock": "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#E8F0EA] text-[#2B593F]",
+      "low_stock": "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#FDF3E1] text-[#B36B00]",
+      "out_of_stock": "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#FAECEB] text-[#A33022]"
+    }
+  },
+  "media_and_images": {
+    "hero_or_header_bg": {
+      "url": "https://images.unsplash.com/photo-1668097613572-40b7c11c8727?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxzb2xhciUyMHBhbmVscyUyMGluc3RhbGxhdGlvbnxlbnwwfHx8fDE3NzUwNTQ3MjV8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Person working on a solar panel. Use as an ambient background for a welcome banner or login screen with a heavy white/stone gradient overlay (e.g., bg-white/80)."
+    },
+    "empty_state_illustration": {
+      "url": "https://images.unsplash.com/photo-1563456020978-5a5eb63ce380?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwaGFyZHdhcmUlMjBwaXBlcyUyMGNhYmxlc3xlbnwwfHx8fDE3NzUwNTQ3MjZ8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Close up of pipes and wires. Use in empty state cards or 'No Inventory' alerts with a heavy grayscale filter and low opacity."
+    }
+  },
+  "testing_attributes": {
+    "rules": "All interactive and key informational elements MUST include a data-testid attribute.",
+    "examples": [
+      "data-testid='inventory-table'",
+      "data-testid='row-{itemId}'",
+      "data-testid='increment-{itemId}'",
+      "data-testid='decrement-{itemId}'",
+      "data-testid='withdraw-btn-{motorType}'",
+      "data-testid='max-production-{motorType}'"
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Do not use generic blue/indigo SaaS colors. Stick strictly to the Organic & Earthy palette (Forest Green/Stone/Terracotta) provided.",
+    "The UI must feel like a tactile 'Control Room'. Use the tight 1px borders and avoid muddy drop shadows.",
+    "Use Shadcn UI components for complex interactions if possible, but style them to match the flat/tactile aesthetic.",
+    "Ensure the Motor Requirement Logic clearly displays what components are missing if a system cannot be built. Use the danger/warning colors for missing components.",
+    "The Withdraw functionality must update the inventory state in real-time and recalculate the maximum production feasibility immediately.",
+    "Format the inventory table with clear columns: Item Name, Category, Current Stock, Required for 3HP/5HP/7.5HP, Status, and Quick Actions (+/-).",
+    "Never use placeholder images like via.placeholder.com. Use the provided Unsplash URLs."
+  ]
+}
