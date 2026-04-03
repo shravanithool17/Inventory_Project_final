@@ -18,7 +18,8 @@ ROOT_DIR = Path(__file__).parent
 # MongoDB connection
 # mongo_url = "mongodb://localhost:27017"
 mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
-client = AsyncIOMotorClient(mongo_url)
+# client = AsyncIOMotorClient(mongo_url)
+client = AsyncIOMotorClient(mongo_url, tls=True, tlsAllowInvalidCertificates=True)
 # db = client[os.environ['DB_NAME']]
 db = client["test"]
 
