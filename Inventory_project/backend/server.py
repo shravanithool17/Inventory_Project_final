@@ -23,10 +23,7 @@ else:
 
 db = client["test"]
 
-# Create the main app without a prefix
 app = FastAPI()
-
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
 
@@ -75,67 +72,68 @@ class UsageRecord(BaseModel):
 def get_initial_components():
     return [
         # ── BOS Components (26) ──────────────────────────────────
-        {"id": "comp_1",  "name": "Connector MC-4",                  "unit": "Set",  "quantity": 200, "category": "Electrical"},
-        {"id": "comp_2",  "name": "Bitumen Tape",                    "unit": "Nos",  "quantity": 200, "category": "Accessories"},
-        {"id": "comp_3",  "name": "Teflon Tape",                     "unit": "Nos",  "quantity": 200, "category": "Accessories"},
-        {"id": "comp_4",  "name": "PVC Electrical Insulation Tape",  "unit": "Nos",  "quantity": 200, "category": "Accessories"},
-        {"id": "comp_5",  "name": "Cable Red (4 sq mm)",             "unit": "Mtr",  "quantity": 200, "category": "Electrical"},
-        {"id": "comp_6",  "name": "Cable Black (4 sq mm)",           "unit": "Mtr",  "quantity": 200, "category": "Electrical"},
-        {"id": "comp_7",  "name": "Flat Cable (3CX 2.5 sq mm)",     "unit": "Mtr",  "quantity": 200, "category": "Electrical"},
-        {"id": "comp_8",  "name": "Earthing Cable (1.5m)",           "unit": "Nos",  "quantity": 200, "category": "Electrical"},
-        {"id": "comp_9",  "name": "Lightning Arrestor Assembly",     "unit": "Set",  "quantity": 200, "category": "Safety"},
-        {"id": "comp_10", "name": "Arrestor Spike",                  "unit": "Set",  "quantity": 200, "category": "Safety"},
-        {"id": "comp_11", "name": "Arrestor Rod 14mm",               "unit": "Nos",  "quantity": 200, "category": "Safety"},
-        {"id": "comp_12", "name": "Earthing Rod (14mm x 1m)",        "unit": "Set",  "quantity": 200, "category": "Safety"},
-        {"id": "comp_13", "name": "GI Pipe",                         "unit": "Nos",  "quantity": 200, "category": "Plumbing"},
-        {"id": "comp_14", "name": "Earthing Patti",                  "unit": "Nos",  "quantity": 200, "category": "Safety"},
-        {"id": "comp_15", "name": "Earthing Pit",                    "unit": "Nos",  "quantity": 200, "category": "Safety"},
-        {"id": "comp_16", "name": "HDPE Pipe 63mm",                  "unit": "Mtr",  "quantity": 200, "category": "Plumbing"},
-        {"id": "comp_17", "name": "HDPE Pipe 75mm",                  "unit": "Mtr",  "quantity": 200, "category": "Plumbing"},
-        {"id": "comp_18", "name": "Cable Tie",                       "unit": "Pkt",  "quantity": 200, "category": "Accessories"},
-        {"id": "comp_19", "name": "35mm Sleeve",                     "unit": "Mtr",  "quantity": 200, "category": "Accessories"},
-        {"id": "comp_20", "name": "SS Nipple 2\"",                   "unit": "Nos",  "quantity": 200, "category": "Plumbing"},
-        {"id": "comp_21", "name": "PP Rope 12mm",                    "unit": "Mtr",  "quantity": 200, "category": "Accessories"},
-        {"id": "comp_22", "name": "6 sq mm Ring Lugs",               "unit": "Nos",  "quantity": 200, "category": "Electrical"},
-        {"id": "comp_23", "name": "Hose Clamp 2\"",                  "unit": "Nos",  "quantity": 200, "category": "Plumbing"},
-        {"id": "comp_24", "name": "M6 x 50 GI Nut & Bolt",          "unit": "Nos",  "quantity": 200, "category": "Hardware"},
-        {"id": "comp_25", "name": "M8 x 75 SS Nut & Bolt",          "unit": "Nos",  "quantity": 200, "category": "Hardware"},
-        {"id": "comp_26", "name": "Chemical Bag (5kg)",              "unit": "Bag",  "quantity": 200, "category": "Accessories"},
+        {"id": "comp_1",  "name": "Connector MC-4",                 "unit": "Set", "quantity": 200, "category": "Electrical"},
+        {"id": "comp_2",  "name": "Bitumen Tape",                   "unit": "Nos", "quantity": 200, "category": "Accessories"},
+        {"id": "comp_3",  "name": "Teflon Tape",                    "unit": "Nos", "quantity": 200, "category": "Accessories"},
+        {"id": "comp_4",  "name": "PVC Electrical Insulation Tape", "unit": "Nos", "quantity": 200, "category": "Accessories"},
+        {"id": "comp_5",  "name": "Cable Red (4 sq mm)",            "unit": "Mtr", "quantity": 200, "category": "Electrical"},
+        {"id": "comp_6",  "name": "Cable Black (4 sq mm)",          "unit": "Mtr", "quantity": 200, "category": "Electrical"},
+        {"id": "comp_7",  "name": "Flat Cable (3CX 2.5 sq mm)",    "unit": "Mtr", "quantity": 200, "category": "Electrical"},
+        {"id": "comp_8",  "name": "Earthing Cable (1.5m)",          "unit": "Nos", "quantity": 200, "category": "Electrical"},
+        {"id": "comp_9",  "name": "Lightning Arrestor Assembly",    "unit": "Set", "quantity": 200, "category": "Safety"},
+        {"id": "comp_10", "name": "Arrestor Spike",                 "unit": "Set", "quantity": 200, "category": "Safety"},
+        {"id": "comp_11", "name": "Arrestor Rod 14mm",              "unit": "Nos", "quantity": 200, "category": "Safety"},
+        {"id": "comp_12", "name": "Earthing Rod (14mm x 1m)",       "unit": "Set", "quantity": 200, "category": "Safety"},
+        {"id": "comp_13", "name": "GI Pipe",                        "unit": "Nos", "quantity": 200, "category": "Plumbing"},
+        {"id": "comp_14", "name": "Earthing Patti",                 "unit": "Nos", "quantity": 200, "category": "Safety"},
+        {"id": "comp_15", "name": "Earthing Pit",                   "unit": "Nos", "quantity": 200, "category": "Safety"},
+        {"id": "comp_16", "name": "HDPE Pipe 63mm",                 "unit": "Mtr", "quantity": 200, "category": "Plumbing"},
+        {"id": "comp_17", "name": "HDPE Pipe 75mm",                 "unit": "Mtr", "quantity": 200, "category": "Plumbing"},
+        {"id": "comp_18", "name": "Cable Tie",                      "unit": "Pkt", "quantity": 200, "category": "Accessories"},
+        {"id": "comp_19", "name": "35mm Sleeve",                    "unit": "Mtr", "quantity": 200, "category": "Accessories"},
+        {"id": "comp_20", "name": "SS Nipple 2\"",                  "unit": "Nos", "quantity": 200, "category": "Plumbing"},
+        {"id": "comp_21", "name": "PP Rope 12mm",                   "unit": "Mtr", "quantity": 200, "category": "Accessories"},
+        {"id": "comp_22", "name": "6 sq mm Ring Lugs",              "unit": "Nos", "quantity": 200, "category": "Electrical"},
+        {"id": "comp_23", "name": "Hose Clamp 2\"",                 "unit": "Nos", "quantity": 200, "category": "Plumbing"},
+        {"id": "comp_24", "name": "M6 x 50 GI Nut & Bolt",         "unit": "Nos", "quantity": 200, "category": "Hardware"},
+        {"id": "comp_25", "name": "M8 x 75 SS Nut & Bolt",         "unit": "Nos", "quantity": 200, "category": "Hardware"},
+        {"id": "comp_26", "name": "Chemical Bag (5kg)",             "unit": "Bag", "quantity": 200, "category": "Accessories"},
 
-        # ── New BOS: Flat Cable 4 sqmm (for 7.5HP) ──────────────
-        {"id": "comp_27", "name": "Flat Cable (4 sq mm)",            "unit": "Mtr",  "quantity": 200, "category": "Electrical"},
+        # ── Flat Cable 4 sqmm (7.5HP new) ───────────────────────
+        {"id": "comp_27", "name": "Flat Cable (4 sq mm)",           "unit": "Mtr", "quantity": 200, "category": "Electrical"},
 
-        # ── 6MMS Structural (for 3HP) ────────────────────────────
-        {"id": "comp_28", "name": "Column Post (114mm OD)",          "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_29", "name": "Main Rafter (60x40mm)",           "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_30", "name": "Side Rafter (60x40mm)",           "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_31", "name": "32x32 Tube (1900mm)",             "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_32", "name": "32x32 Tube (1515mm)",             "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_33", "name": "Purlin (3480mm)",                 "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_34", "name": "Top Plate",                       "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_35", "name": "Small Clamp",                     "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_36", "name": "Big Clamp",                       "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_37", "name": "Controller Clamp",                "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        # ── MMS Shared Structural (used in all 3 types) ──────────
+        {"id": "comp_28", "name": "Top Plate",                      "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_29", "name": "Small Clamp",                    "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_30", "name": "Big Clamp",                      "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_31", "name": "Controller Clamp",               "unit": "Nos", "quantity": 200, "category": "MMS"},
 
-        # ── 9MMS Structural (for 5HP) ────────────────────────────
-        {"id": "comp_38", "name": "Column Post (139mm OD)",          "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_39", "name": "Main Rafter (80x40mm)",           "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_40", "name": "Side Rafter (80x40mm)",           "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_41", "name": "40x40 Tube (2245mm)",             "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_42", "name": "40x40 Tube (1900mm)",             "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_43", "name": "40x40 Tube (1515mm)",             "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_44", "name": "Purlin (4640mm)",                 "unit": "Nos",  "quantity": 200, "category": "MMS"},
-        {"id": "comp_45", "name": "Purlin (5800mm)",                 "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        # ── 6MMS Specific Structural (3HP + shared with 13MMS) ───
+        {"id": "comp_32", "name": "Column Post (114mm OD)",         "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_33", "name": "Main Rafter (60x40mm)",          "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_34", "name": "Side Rafter (60x40mm)",          "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_35", "name": "32x32 Tube (1900mm)",            "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_36", "name": "32x32 Tube (1515mm)",            "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_37", "name": "Purlin (3480mm)",                "unit": "Nos", "quantity": 200, "category": "MMS"},
 
-        # ── 13MMS Extra (for 7.5HP) ──────────────────────────────
-        {"id": "comp_46", "name": "Purlin (4640mm) - 13MMS",        "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        # ── 9MMS Specific Structural (5HP) ───────────────────────
+        {"id": "comp_38", "name": "Column Post (139mm OD)",         "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_39", "name": "Main Rafter (80x40mm)",          "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_40", "name": "Side Rafter (80x40mm)",          "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_41", "name": "40x40 Tube (2245mm)",            "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_42", "name": "40x40 Tube (1900mm)",            "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_43", "name": "40x40 Tube (1515mm)",            "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_44", "name": "Purlin (4640mm)",                "unit": "Nos", "quantity": 200, "category": "MMS"},
+        {"id": "comp_45", "name": "Purlin (5800mm)",                "unit": "Nos", "quantity": 200, "category": "MMS"},
+        # Total unique = 45 components
+        # 13MMS (7.5HP) reuses: comp_32-37 (6MMS parts) + comp_44 (Purlin 4640) + comp_28-31 (shared)
     ]
 
 
 def get_motor_requirements_data():
     return [
         # ════════════════════════════════════════════════════════
-        # 3HP — BOS (21) + 6MMS Structural (10) = 31 components
+        # 3HP — 21 BOS + 10 MMS (6MMS structural) = 31 total
         # ════════════════════════════════════════════════════════
         {"motor_type": "3HP", "component_id": "comp_1",  "component_name": "Connector MC-4",                 "required_quantity": 4},
         {"motor_type": "3HP", "component_id": "comp_2",  "component_name": "Bitumen Tape",                   "required_quantity": 1},
@@ -159,19 +157,19 @@ def get_motor_requirements_data():
         {"motor_type": "3HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt",         "required_quantity": 1},
         {"motor_type": "3HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)",             "required_quantity": 2},
         # 6MMS Structural
-        {"motor_type": "3HP", "component_id": "comp_28", "component_name": "Column Post (114mm OD)",         "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_29", "component_name": "Main Rafter (60x40mm)",          "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_30", "component_name": "Side Rafter (60x40mm)",          "required_quantity": 2},
-        {"motor_type": "3HP", "component_id": "comp_31", "component_name": "32x32 Tube (1900mm)",            "required_quantity": 3},
-        {"motor_type": "3HP", "component_id": "comp_32", "component_name": "32x32 Tube (1515mm)",            "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_33", "component_name": "Purlin (3480mm)",                "required_quantity": 4},
-        {"motor_type": "3HP", "component_id": "comp_34", "component_name": "Top Plate",                      "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_35", "component_name": "Small Clamp",                    "required_quantity": 2},
-        {"motor_type": "3HP", "component_id": "comp_36", "component_name": "Big Clamp",                      "required_quantity": 2},
-        {"motor_type": "3HP", "component_id": "comp_37", "component_name": "Controller Clamp",               "required_quantity": 2},
+        {"motor_type": "3HP", "component_id": "comp_32", "component_name": "Column Post (114mm OD)",         "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_33", "component_name": "Main Rafter (60x40mm)",          "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_34", "component_name": "Side Rafter (60x40mm)",          "required_quantity": 2},
+        {"motor_type": "3HP", "component_id": "comp_35", "component_name": "32x32 Tube (1900mm)",            "required_quantity": 3},
+        {"motor_type": "3HP", "component_id": "comp_36", "component_name": "32x32 Tube (1515mm)",            "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_37", "component_name": "Purlin (3480mm)",                "required_quantity": 4},
+        {"motor_type": "3HP", "component_id": "comp_28", "component_name": "Top Plate",                      "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_29", "component_name": "Small Clamp",                    "required_quantity": 2},
+        {"motor_type": "3HP", "component_id": "comp_30", "component_name": "Big Clamp",                      "required_quantity": 2},
+        {"motor_type": "3HP", "component_id": "comp_31", "component_name": "Controller Clamp",               "required_quantity": 2},
 
         # ════════════════════════════════════════════════════════
-        # 5HP — BOS (23) + 9MMS Structural (12) = 35 components
+        # 5HP — 23 BOS + 12 MMS (9MMS structural) = 35 total
         # ════════════════════════════════════════════════════════
         {"motor_type": "5HP", "component_id": "comp_1",  "component_name": "Connector MC-4",                 "required_quantity": 4},
         {"motor_type": "5HP", "component_id": "comp_2",  "component_name": "Bitumen Tape",                   "required_quantity": 1},
@@ -205,13 +203,13 @@ def get_motor_requirements_data():
         {"motor_type": "5HP", "component_id": "comp_43", "component_name": "40x40 Tube (1515mm)",            "required_quantity": 1},
         {"motor_type": "5HP", "component_id": "comp_44", "component_name": "Purlin (4640mm)",                "required_quantity": 2},
         {"motor_type": "5HP", "component_id": "comp_45", "component_name": "Purlin (5800mm)",                "required_quantity": 2},
-        {"motor_type": "5HP", "component_id": "comp_34", "component_name": "Top Plate",                      "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_35", "component_name": "Small Clamp",                    "required_quantity": 2},
-        {"motor_type": "5HP", "component_id": "comp_36", "component_name": "Big Clamp",                      "required_quantity": 2},
-        {"motor_type": "5HP", "component_id": "comp_37", "component_name": "Controller Clamp",               "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_28", "component_name": "Top Plate",                      "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_29", "component_name": "Small Clamp",                    "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_30", "component_name": "Big Clamp",                      "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_31", "component_name": "Controller Clamp",               "required_quantity": 2},
 
         # ════════════════════════════════════════════════════════
-        # 7.5HP — BOS (24) + Flat Cable + 13MMS Structural (11) = 36
+        # 7.5HP — 24 BOS + Flat Cable + 11 MMS (13MMS) = 36 total
         # ════════════════════════════════════════════════════════
         {"motor_type": "7.5HP", "component_id": "comp_1",  "component_name": "Connector MC-4",                 "required_quantity": 4},
         {"motor_type": "7.5HP", "component_id": "comp_2",  "component_name": "Bitumen Tape",                   "required_quantity": 1},
@@ -237,18 +235,18 @@ def get_motor_requirements_data():
         {"motor_type": "7.5HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt",         "required_quantity": 1},
         {"motor_type": "7.5HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)",             "required_quantity": 1},
         {"motor_type": "7.5HP", "component_id": "comp_27", "component_name": "Flat Cable (4 sq mm)",           "required_quantity": 50},
-        # 13MMS Structural
-        {"motor_type": "7.5HP", "component_id": "comp_28", "component_name": "Column Post (114mm OD)",         "required_quantity": 2},
-        {"motor_type": "7.5HP", "component_id": "comp_29", "component_name": "Main Rafter (60x40mm)",          "required_quantity": 2},
-        {"motor_type": "7.5HP", "component_id": "comp_30", "component_name": "Side Rafter (60x40mm)",          "required_quantity": 4},
-        {"motor_type": "7.5HP", "component_id": "comp_31", "component_name": "32x32 Tube (1900mm)",            "required_quantity": 6},
-        {"motor_type": "7.5HP", "component_id": "comp_32", "component_name": "32x32 Tube (1515mm)",            "required_quantity": 2},
-        {"motor_type": "7.5HP", "component_id": "comp_33", "component_name": "Purlin (3480mm)",                "required_quantity": 6},
-        {"motor_type": "7.5HP", "component_id": "comp_46", "component_name": "Purlin (4640mm) - 13MMS",       "required_quantity": 2},
-        {"motor_type": "7.5HP", "component_id": "comp_34", "component_name": "Top Plate",                      "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_35", "component_name": "Small Clamp",                    "required_quantity": 4},
-        {"motor_type": "7.5HP", "component_id": "comp_36", "component_name": "Big Clamp",                      "required_quantity": 4},
-        {"motor_type": "7.5HP", "component_id": "comp_37", "component_name": "Controller Clamp",               "required_quantity": 2},
+        # 13MMS Structural (reuses 6MMS parts + Purlin 4640 from 9MMS)
+        {"motor_type": "7.5HP", "component_id": "comp_32", "component_name": "Column Post (114mm OD)",         "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_33", "component_name": "Main Rafter (60x40mm)",          "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_34", "component_name": "Side Rafter (60x40mm)",          "required_quantity": 4},
+        {"motor_type": "7.5HP", "component_id": "comp_35", "component_name": "32x32 Tube (1900mm)",            "required_quantity": 6},
+        {"motor_type": "7.5HP", "component_id": "comp_36", "component_name": "32x32 Tube (1515mm)",            "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_37", "component_name": "Purlin (3480mm)",                "required_quantity": 6},
+        {"motor_type": "7.5HP", "component_id": "comp_44", "component_name": "Purlin (4640mm)",                "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_28", "component_name": "Top Plate",                      "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_29", "component_name": "Small Clamp",                    "required_quantity": 4},
+        {"motor_type": "7.5HP", "component_id": "comp_30", "component_name": "Big Clamp",                      "required_quantity": 4},
+        {"motor_type": "7.5HP", "component_id": "comp_31", "component_name": "Controller Clamp",               "required_quantity": 2},
     ]
 
 
@@ -256,7 +254,7 @@ async def seed_database():
     await db.motor_requirements.delete_many({})
 
     count = await db.components.count_documents({})
-    if count > 0 and count < 46:
+    if count > 0 and count < 45:
         existing_ids = [c['id'] for c in await db.components.find({}, {"_id": 0, "id": 1}).to_list(1000)]
         all_components = get_initial_components()
         new_components = [c for c in all_components if c['id'] not in existing_ids]
@@ -405,7 +403,7 @@ async def withdraw_components(request: WithdrawRequest):
             {"$inc": {"quantity": -needed}}
         )
 
-    # Auto record usage
+    # Auto record usage on successful withdrawal
     await db.usage_history.insert_one({
         "motor_type": request.motor_type,
         "quantity": request.quantity,
