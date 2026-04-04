@@ -19,7 +19,12 @@ ROOT_DIR = Path(__file__).parent
 # mongo_url = "mongodb://localhost:27017"
 mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
 # client = AsyncIOMotorClient(mongo_url)
-client = AsyncIOMotorClient(mongo_url, tls=True, tlsAllowInvalidCertificates=True)
+# client = AsyncIOMotorClient(mongo_url, tls=True, tlsAllowInvalidCertificates=True)
+
+if "mongodb+srv" in mongo_url:
+    client = AsyncIOMotorClient(mongo_url, tls=True, tlsAllowInvalidCertificates=True)
+else:
+    client = AsyncIOMotorClient(mongo_url)
 # db = client[os.environ['DB_NAME']]
 db = client["test"]
 
@@ -66,25 +71,48 @@ class FeasibilityResponse(BaseModel):
 
 
 # Seed initial data
+# async def seed_database():
+#     # Always reseed motor requirements (they may have been updated)
+#     await db.motor_requirements.delete_many({})
+    
+#     # Only seed components if they don't exist
+#     count = await db.components.count_documents({})
+#     if count > 0:
+#         # Components exist, only insert motor requirements
+#         motor_reqs = get_motor_requirements_data()
+#         if motor_reqs:
+#             await db.motor_requirements.insert_many(motor_reqs)
+#         return
+    
+#     # Seed both components and requirements
+#     components = get_initial_components()
+#     for comp in components:
+#         comp['created_at'] = datetime.now(timezone.utc).isoformat()
+    
+#     await db.components.insert_many(components)
+    
+#     motor_reqs = get_motor_requirements_data()
+#     if motor_reqs:
+#         await db.motor_requirements.insert_many(motor_reqs)
+
 async def seed_database():
-    # Always reseed motor requirements (they may have been updated)
     await db.motor_requirements.delete_many({})
     
-    # Only seed components if they don't exist
     count = await db.components.count_documents({})
-    if count > 0:
-        # Components exist, only insert motor requirements
-        motor_reqs = get_motor_requirements_data()
-        if motor_reqs:
-            await db.motor_requirements.insert_many(motor_reqs)
-        return
-    
-    # Seed both components and requirements
-    components = get_initial_components()
-    for comp in components:
-        comp['created_at'] = datetime.now(timezone.utc).isoformat()
-    
-    await db.components.insert_many(components)
+    if count > 0 and count < 59:
+        # Naye components add karo
+        existing_ids = [c['id'] for c in await db.components.find({}, {"_id": 0, "id": 1}).to_list(1000)]
+        all_components = get_initial_components()
+        new_components = [c for c in all_components if c['id'] not in existing_ids]
+        if new_components:
+            for comp in new_components:
+                comp['created_at'] = datetime.now(timezone.utc).isoformat()
+            await db.components.insert_many(new_components)
+    elif count == 0:
+        components = get_initial_components()
+        for comp in components:
+            comp['created_at'] = datetime.now(timezone.utc).isoformat()
+        await db.components.insert_many(components)
     
     motor_reqs = get_motor_requirements_data()
     if motor_reqs:
@@ -119,6 +147,40 @@ def get_initial_components():
         {"id": "comp_24", "name": "M6 x 50 GI Nut & Bolt", "unit": "Nos", "quantity": 200, "category": "Hardware"},
         {"id": "comp_25", "name": "M8 x 75 SS Nut & Bolt", "unit": "Nos", "quantity": 200, "category": "Hardware"},
         {"id": "comp_26", "name": "Chemical Bag (5kg)", "unit": "Bag", "quantity": 200, "category": "Accessories"},
+        # MMS Components (comp_27 se start)
+{"id": "comp_27", "name": "Column Post (114mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_28", "name": "Main Rafter (60x40mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_29", "name": "Side Rafter (60x40mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_30", "name": "32x32 Tube (1900mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_31", "name": "32x32 Tube (1515mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_32", "name": "Purlin (3480mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_33", "name": "Top Plate", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_34", "name": "Small Clamp", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_35", "name": "Big Clamp", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_36", "name": "Controller Clamp", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_37", "name": "M6x25 Anti Theft Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_38", "name": "M6 Nut", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_39", "name": "M6 Washer", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_40", "name": "M6 Spring Washer", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_41", "name": "M16x100 Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_42", "name": "M16x50 Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_43", "name": "M10x75 Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_44", "name": "M10x25/30 Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_45", "name": "M10 Nut", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_46", "name": "M16 Nut", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_47", "name": "M6x30 Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_48", "name": "M6 Washer (6OD)", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_49", "name": "M10 Washer", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_50", "name": "M16 Washer", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
+{"id": "comp_51", "name": "Column Post (139mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_52", "name": "Main Rafter (80x40mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_53", "name": "Side Rafter (80x40mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_54", "name": "40x40 Tube (2245mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_55", "name": "40x40 Tube (1900mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_56", "name": "40x40 Tube (1515mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_57", "name": "Purlin (4640mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_58", "name": "Purlin (5800mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
+{"id": "comp_59", "name": "Flat Cable (4 sq mm)", "unit": "Mtr", "quantity": 200, "category": "Electrical"},
     ]
 
 
@@ -147,6 +209,31 @@ def get_motor_requirements_data():
         {"motor_type": "3HP", "component_id": "comp_24", "component_name": "M6 x 50 GI Nut & Bolt", "required_quantity": 3},
         {"motor_type": "3HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt", "required_quantity": 1},
         {"motor_type": "3HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)", "required_quantity": 2},
+        {"motor_type": "3HP", "component_id": "comp_27", "component_name": "Column Post (114mm)", "required_quantity": 1},
+{"motor_type": "3HP", "component_id": "comp_28", "component_name": "Main Rafter (60x40mm)", "required_quantity": 1},
+{"motor_type": "3HP", "component_id": "comp_29", "component_name": "Side Rafter (60x40mm)", "required_quantity": 2},
+{"motor_type": "3HP", "component_id": "comp_30", "component_name": "32x32 Tube (1900mm)", "required_quantity": 3},
+{"motor_type": "3HP", "component_id": "comp_31", "component_name": "32x32 Tube (1515mm)", "required_quantity": 1},
+{"motor_type": "3HP", "component_id": "comp_32", "component_name": "Purlin (3480mm)", "required_quantity": 4},
+{"motor_type": "3HP", "component_id": "comp_33", "component_name": "Top Plate", "required_quantity": 1},
+{"motor_type": "3HP", "component_id": "comp_34", "component_name": "Small Clamp", "required_quantity": 2},
+{"motor_type": "3HP", "component_id": "comp_35", "component_name": "Big Clamp", "required_quantity": 2},
+{"motor_type": "3HP", "component_id": "comp_36", "component_name": "Controller Clamp", "required_quantity": 2},
+{"motor_type": "3HP", "component_id": "comp_37", "component_name": "M6x25 Anti Theft Bolt", "required_quantity": 24},
+{"motor_type": "3HP", "component_id": "comp_38", "component_name": "M6 Nut", "required_quantity": 24},
+{"motor_type": "3HP", "component_id": "comp_39", "component_name": "M6 Washer", "required_quantity": 48},
+{"motor_type": "3HP", "component_id": "comp_40", "component_name": "M6 Spring Washer", "required_quantity": 48},
+{"motor_type": "3HP", "component_id": "comp_41", "component_name": "M16x100 Bolt", "required_quantity": 2},
+{"motor_type": "3HP", "component_id": "comp_42", "component_name": "M16x50 Bolt", "required_quantity": 4},
+{"motor_type": "3HP", "component_id": "comp_43", "component_name": "M10x75 Bolt", "required_quantity": 12},
+{"motor_type": "3HP", "component_id": "comp_44", "component_name": "M10x25/30 Bolt", "required_quantity": 24},
+{"motor_type": "3HP", "component_id": "comp_45", "component_name": "M10 Nut", "required_quantity": 36},
+{"motor_type": "3HP", "component_id": "comp_46", "component_name": "M16 Nut", "required_quantity": 6},
+{"motor_type": "3HP", "component_id": "comp_47", "component_name": "M6x30 Bolt", "required_quantity": 8},
+{"motor_type": "3HP", "component_id": "comp_48", "component_name": "M6 Washer (6OD)", "required_quantity": 16},
+{"motor_type": "3HP", "component_id": "comp_49", "component_name": "M10 Washer", "required_quantity": 72},
+{"motor_type": "3HP", "component_id": "comp_50", "component_name": "M16 Washer", "required_quantity": 12},
+
         
         # 5HP Requirements (from 5HP-30M BOS Packing List.pdf)
         {"motor_type": "5HP", "component_id": "comp_1", "component_name": "Connector MC-4", "required_quantity": 4},
@@ -172,6 +259,32 @@ def get_motor_requirements_data():
         {"motor_type": "5HP", "component_id": "comp_24", "component_name": "M6 x 50 GI Nut & Bolt", "required_quantity": 2},
         {"motor_type": "5HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt", "required_quantity": 1},
         {"motor_type": "5HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)", "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_51", "component_name": "Column Post (139mm)", "required_quantity": 1},
+{"motor_type": "5HP", "component_id": "comp_52", "component_name": "Main Rafter (80x40mm)", "required_quantity": 1},
+{"motor_type": "5HP", "component_id": "comp_53", "component_name": "Side Rafter (80x40mm)", "required_quantity": 2},
+{"motor_type": "5HP", "component_id": "comp_54", "component_name": "40x40 Tube (2245mm)", "required_quantity": 2},
+{"motor_type": "5HP", "component_id": "comp_55", "component_name": "40x40 Tube (1900mm)", "required_quantity": 1},
+{"motor_type": "5HP", "component_id": "comp_56", "component_name": "40x40 Tube (1515mm)", "required_quantity": 1},
+{"motor_type": "5HP", "component_id": "comp_57", "component_name": "Purlin (4640mm)", "required_quantity": 2},
+{"motor_type": "5HP", "component_id": "comp_58", "component_name": "Purlin (5800mm)", "required_quantity": 2},
+{"motor_type": "5HP", "component_id": "comp_33", "component_name": "Top Plate", "required_quantity": 1},
+{"motor_type": "5HP", "component_id": "comp_34", "component_name": "Small Clamp", "required_quantity": 2},
+{"motor_type": "5HP", "component_id": "comp_35", "component_name": "Big Clamp", "required_quantity": 2},
+{"motor_type": "5HP", "component_id": "comp_36", "component_name": "Controller Clamp", "required_quantity": 2},
+{"motor_type": "5HP", "component_id": "comp_37", "component_name": "M6x25 Anti Theft Bolt", "required_quantity": 36},
+{"motor_type": "5HP", "component_id": "comp_38", "component_name": "M6 Nut", "required_quantity": 36},
+{"motor_type": "5HP", "component_id": "comp_39", "component_name": "M6 Washer", "required_quantity": 72},
+{"motor_type": "5HP", "component_id": "comp_40", "component_name": "M6 Spring Washer", "required_quantity": 36},
+{"motor_type": "5HP", "component_id": "comp_41", "component_name": "M16x100 Bolt", "required_quantity": 2},
+{"motor_type": "5HP", "component_id": "comp_42", "component_name": "M16x50 Bolt", "required_quantity": 4},
+{"motor_type": "5HP", "component_id": "comp_43", "component_name": "M10x75 Bolt", "required_quantity": 12},
+{"motor_type": "5HP", "component_id": "comp_44", "component_name": "M10x25/30 Bolt", "required_quantity": 24},
+{"motor_type": "5HP", "component_id": "comp_45", "component_name": "M10 Nut", "required_quantity": 36},
+{"motor_type": "5HP", "component_id": "comp_46", "component_name": "M16 Nut", "required_quantity": 6},
+{"motor_type": "5HP", "component_id": "comp_47", "component_name": "M6x30 Bolt", "required_quantity": 8},
+{"motor_type": "5HP", "component_id": "comp_48", "component_name": "M6 Washer (6OD)", "required_quantity": 16},
+{"motor_type": "5HP", "component_id": "comp_49", "component_name": "M10 Washer", "required_quantity": 72},
+{"motor_type": "5HP", "component_id": "comp_50", "component_name": "M16 Washer", "required_quantity": 12},
         
         # 7.5HP Requirements (from 7.5HP-50M BOS Packing List.pdf)
         {"motor_type": "7.5HP", "component_id": "comp_1", "component_name": "Connector MC-4", "required_quantity": 4},
@@ -197,6 +310,31 @@ def get_motor_requirements_data():
         {"motor_type": "7.5HP", "component_id": "comp_24", "component_name": "M6 x 50 GI Nut & Bolt", "required_quantity": 2},
         {"motor_type": "7.5HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt", "required_quantity": 1},
         {"motor_type": "7.5HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)", "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_27", "component_name": "Column Post (114mm)", "required_quantity": 2},
+{"motor_type": "7.5HP", "component_id": "comp_28", "component_name": "Main Rafter (60x40mm)", "required_quantity": 2},
+{"motor_type": "7.5HP", "component_id": "comp_29", "component_name": "Side Rafter (60x40mm)", "required_quantity": 4},
+{"motor_type": "7.5HP", "component_id": "comp_30", "component_name": "32x32 Tube (1900mm)", "required_quantity": 6},
+{"motor_type": "7.5HP", "component_id": "comp_31", "component_name": "32x32 Tube (1515mm)", "required_quantity": 2},
+{"motor_type": "7.5HP", "component_id": "comp_32", "component_name": "Purlin (3480mm)", "required_quantity": 6},
+{"motor_type": "7.5HP", "component_id": "comp_57", "component_name": "Purlin (4640mm)", "required_quantity": 2},
+{"motor_type": "7.5HP", "component_id": "comp_33", "component_name": "Top Plate", "required_quantity": 1},
+{"motor_type": "7.5HP", "component_id": "comp_34", "component_name": "Small Clamp", "required_quantity": 4},
+{"motor_type": "7.5HP", "component_id": "comp_35", "component_name": "Big Clamp", "required_quantity": 4},
+{"motor_type": "7.5HP", "component_id": "comp_36", "component_name": "Controller Clamp", "required_quantity": 2},
+{"motor_type": "7.5HP", "component_id": "comp_37", "component_name": "M6x25 Anti Theft Bolt", "required_quantity": 52},
+{"motor_type": "7.5HP", "component_id": "comp_38", "component_name": "M6 Nut", "required_quantity": 52},
+{"motor_type": "7.5HP", "component_id": "comp_39", "component_name": "M6 Washer", "required_quantity": 104},
+{"motor_type": "7.5HP", "component_id": "comp_40", "component_name": "M6 Spring Washer", "required_quantity": 52},
+{"motor_type": "7.5HP", "component_id": "comp_41", "component_name": "M16x100 Bolt", "required_quantity": 4},
+{"motor_type": "7.5HP", "component_id": "comp_42", "component_name": "M16x50 Bolt", "required_quantity": 8},
+{"motor_type": "7.5HP", "component_id": "comp_43", "component_name": "M10x75 Bolt", "required_quantity": 24},
+{"motor_type": "7.5HP", "component_id": "comp_44", "component_name": "M10x25/30 Bolt", "required_quantity": 48},
+{"motor_type": "7.5HP", "component_id": "comp_45", "component_name": "M10 Nut", "required_quantity": 72},
+{"motor_type": "7.5HP", "component_id": "comp_46", "component_name": "M16 Nut", "required_quantity": 12},
+{"motor_type": "7.5HP", "component_id": "comp_47", "component_name": "M6x30 Bolt", "required_quantity": 16},
+{"motor_type": "7.5HP", "component_id": "comp_48", "component_name": "M6 Washer (6OD)", "required_quantity": 32},
+{"motor_type": "7.5HP", "component_id": "comp_49", "component_name": "M10 Washer", "required_quantity": 154},
+{"motor_type": "7.5HP", "component_id": "comp_50", "component_name": "M16 Washer", "required_quantity": 24},
     ]
     return motor_requirements
 
@@ -391,6 +529,41 @@ async def check_feasibility(request: FeasibilityRequest):
         message="Possible - All components available",
         missing_components=None
     )
+
+
+# Usage Tracking Model
+class UsageRecord(BaseModel):
+    motor_type: str
+    quantity: int
+    date: str = Field(default_factory=lambda: datetime.now(timezone.utc).strftime('%Y-%m-%d'))
+
+# Usage Tracking APIs
+@api_router.post("/usage/record")
+async def record_usage(record: UsageRecord):
+    usage_doc = {
+        "motor_type": record.motor_type,
+        "quantity": record.quantity,
+        "date": record.date,
+        "recorded_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.usage_history.insert_one(usage_doc)
+    
+    # Keep only last 5 days
+    five_days_ago = (datetime.now(timezone.utc).date().__str__())
+    all_records = await db.usage_history.find({}, {"_id": 0}).sort("date", -1).to_list(1000)
+    unique_dates = sorted(set(r['date'] for r in all_records), reverse=True)
+    
+    if len(unique_dates) > 5:
+        dates_to_delete = unique_dates[5:]
+        for d in dates_to_delete:
+            await db.usage_history.delete_many({"date": d})
+    
+    return {"success": True, "message": "Usage recorded"}
+
+@api_router.get("/usage/history")
+async def get_usage_history():
+    records = await db.usage_history.find({}, {"_id": 0}).sort("date", -1).to_list(1000)
+    return records
 
 
 # Include the router in the main app
