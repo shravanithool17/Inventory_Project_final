@@ -13,19 +13,14 @@ from datetime import datetime, timezone
 
 ROOT_DIR = Path(__file__).parent
 
-# load_dotenv(ROOT_DIR / '.env')
-
 # MongoDB connection
-# mongo_url = "mongodb://localhost:27017"
 mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
-# client = AsyncIOMotorClient(mongo_url)
-# client = AsyncIOMotorClient(mongo_url, tls=True, tlsAllowInvalidCertificates=True)
 
 if "mongodb+srv" in mongo_url:
     client = AsyncIOMotorClient(mongo_url, tls=True, tlsAllowInvalidCertificates=True)
 else:
     client = AsyncIOMotorClient(mongo_url)
-# db = client[os.environ['DB_NAME']]
+
 db = client["test"]
 
 # Create the main app without a prefix
@@ -35,10 +30,10 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 
-# Define Models
+# ─── Models ───────────────────────────────────────────────────────────────────
+
 class Component(BaseModel):
     model_config = ConfigDict(extra="ignore")
-    
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     unit: str
@@ -69,38 +64,199 @@ class FeasibilityResponse(BaseModel):
     message: str
     missing_components: Optional[List[Dict]] = None
 
+class UsageRecord(BaseModel):
+    motor_type: str
+    quantity: int
+    date: str = Field(default_factory=lambda: datetime.now(timezone.utc).strftime('%Y-%m-%d'))
 
-# Seed initial data
-# async def seed_database():
-#     # Always reseed motor requirements (they may have been updated)
-#     await db.motor_requirements.delete_many({})
-    
-#     # Only seed components if they don't exist
-#     count = await db.components.count_documents({})
-#     if count > 0:
-#         # Components exist, only insert motor requirements
-#         motor_reqs = get_motor_requirements_data()
-#         if motor_reqs:
-#             await db.motor_requirements.insert_many(motor_reqs)
-#         return
-    
-#     # Seed both components and requirements
-#     components = get_initial_components()
-#     for comp in components:
-#         comp['created_at'] = datetime.now(timezone.utc).isoformat()
-    
-#     await db.components.insert_many(components)
-    
-#     motor_reqs = get_motor_requirements_data()
-#     if motor_reqs:
-#         await db.motor_requirements.insert_many(motor_reqs)
+
+# ─── Seed Data ────────────────────────────────────────────────────────────────
+
+def get_initial_components():
+    return [
+        # ── BOS Components (26) ──────────────────────────────────
+        {"id": "comp_1",  "name": "Connector MC-4",                  "unit": "Set",  "quantity": 200, "category": "Electrical"},
+        {"id": "comp_2",  "name": "Bitumen Tape",                    "unit": "Nos",  "quantity": 200, "category": "Accessories"},
+        {"id": "comp_3",  "name": "Teflon Tape",                     "unit": "Nos",  "quantity": 200, "category": "Accessories"},
+        {"id": "comp_4",  "name": "PVC Electrical Insulation Tape",  "unit": "Nos",  "quantity": 200, "category": "Accessories"},
+        {"id": "comp_5",  "name": "Cable Red (4 sq mm)",             "unit": "Mtr",  "quantity": 200, "category": "Electrical"},
+        {"id": "comp_6",  "name": "Cable Black (4 sq mm)",           "unit": "Mtr",  "quantity": 200, "category": "Electrical"},
+        {"id": "comp_7",  "name": "Flat Cable (3CX 2.5 sq mm)",     "unit": "Mtr",  "quantity": 200, "category": "Electrical"},
+        {"id": "comp_8",  "name": "Earthing Cable (1.5m)",           "unit": "Nos",  "quantity": 200, "category": "Electrical"},
+        {"id": "comp_9",  "name": "Lightning Arrestor Assembly",     "unit": "Set",  "quantity": 200, "category": "Safety"},
+        {"id": "comp_10", "name": "Arrestor Spike",                  "unit": "Set",  "quantity": 200, "category": "Safety"},
+        {"id": "comp_11", "name": "Arrestor Rod 14mm",               "unit": "Nos",  "quantity": 200, "category": "Safety"},
+        {"id": "comp_12", "name": "Earthing Rod (14mm x 1m)",        "unit": "Set",  "quantity": 200, "category": "Safety"},
+        {"id": "comp_13", "name": "GI Pipe",                         "unit": "Nos",  "quantity": 200, "category": "Plumbing"},
+        {"id": "comp_14", "name": "Earthing Patti",                  "unit": "Nos",  "quantity": 200, "category": "Safety"},
+        {"id": "comp_15", "name": "Earthing Pit",                    "unit": "Nos",  "quantity": 200, "category": "Safety"},
+        {"id": "comp_16", "name": "HDPE Pipe 63mm",                  "unit": "Mtr",  "quantity": 200, "category": "Plumbing"},
+        {"id": "comp_17", "name": "HDPE Pipe 75mm",                  "unit": "Mtr",  "quantity": 200, "category": "Plumbing"},
+        {"id": "comp_18", "name": "Cable Tie",                       "unit": "Pkt",  "quantity": 200, "category": "Accessories"},
+        {"id": "comp_19", "name": "35mm Sleeve",                     "unit": "Mtr",  "quantity": 200, "category": "Accessories"},
+        {"id": "comp_20", "name": "SS Nipple 2\"",                   "unit": "Nos",  "quantity": 200, "category": "Plumbing"},
+        {"id": "comp_21", "name": "PP Rope 12mm",                    "unit": "Mtr",  "quantity": 200, "category": "Accessories"},
+        {"id": "comp_22", "name": "6 sq mm Ring Lugs",               "unit": "Nos",  "quantity": 200, "category": "Electrical"},
+        {"id": "comp_23", "name": "Hose Clamp 2\"",                  "unit": "Nos",  "quantity": 200, "category": "Plumbing"},
+        {"id": "comp_24", "name": "M6 x 50 GI Nut & Bolt",          "unit": "Nos",  "quantity": 200, "category": "Hardware"},
+        {"id": "comp_25", "name": "M8 x 75 SS Nut & Bolt",          "unit": "Nos",  "quantity": 200, "category": "Hardware"},
+        {"id": "comp_26", "name": "Chemical Bag (5kg)",              "unit": "Bag",  "quantity": 200, "category": "Accessories"},
+
+        # ── New BOS: Flat Cable 4 sqmm (for 7.5HP) ──────────────
+        {"id": "comp_27", "name": "Flat Cable (4 sq mm)",            "unit": "Mtr",  "quantity": 200, "category": "Electrical"},
+
+        # ── 6MMS Structural (for 3HP) ────────────────────────────
+        {"id": "comp_28", "name": "Column Post (114mm OD)",          "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_29", "name": "Main Rafter (60x40mm)",           "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_30", "name": "Side Rafter (60x40mm)",           "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_31", "name": "32x32 Tube (1900mm)",             "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_32", "name": "32x32 Tube (1515mm)",             "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_33", "name": "Purlin (3480mm)",                 "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_34", "name": "Top Plate",                       "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_35", "name": "Small Clamp",                     "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_36", "name": "Big Clamp",                       "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_37", "name": "Controller Clamp",                "unit": "Nos",  "quantity": 200, "category": "MMS"},
+
+        # ── 9MMS Structural (for 5HP) ────────────────────────────
+        {"id": "comp_38", "name": "Column Post (139mm OD)",          "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_39", "name": "Main Rafter (80x40mm)",           "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_40", "name": "Side Rafter (80x40mm)",           "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_41", "name": "40x40 Tube (2245mm)",             "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_42", "name": "40x40 Tube (1900mm)",             "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_43", "name": "40x40 Tube (1515mm)",             "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_44", "name": "Purlin (4640mm)",                 "unit": "Nos",  "quantity": 200, "category": "MMS"},
+        {"id": "comp_45", "name": "Purlin (5800mm)",                 "unit": "Nos",  "quantity": 200, "category": "MMS"},
+
+        # ── 13MMS Extra (for 7.5HP) ──────────────────────────────
+        {"id": "comp_46", "name": "Purlin (4640mm) - 13MMS",        "unit": "Nos",  "quantity": 200, "category": "MMS"},
+    ]
+
+
+def get_motor_requirements_data():
+    return [
+        # ════════════════════════════════════════════════════════
+        # 3HP — BOS (21) + 6MMS Structural (10) = 31 components
+        # ════════════════════════════════════════════════════════
+        {"motor_type": "3HP", "component_id": "comp_1",  "component_name": "Connector MC-4",                 "required_quantity": 4},
+        {"motor_type": "3HP", "component_id": "comp_2",  "component_name": "Bitumen Tape",                   "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_3",  "component_name": "Teflon Tape",                    "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_4",  "component_name": "PVC Electrical Insulation Tape", "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_5",  "component_name": "Cable Red (4 sq mm)",            "required_quantity": 4},
+        {"motor_type": "3HP", "component_id": "comp_6",  "component_name": "Cable Black (4 sq mm)",          "required_quantity": 4},
+        {"motor_type": "3HP", "component_id": "comp_7",  "component_name": "Flat Cable (3CX 2.5 sq mm)",    "required_quantity": 30},
+        {"motor_type": "3HP", "component_id": "comp_8",  "component_name": "Earthing Cable (1.5m)",          "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_9",  "component_name": "Lightning Arrestor Assembly",    "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_12", "component_name": "Earthing Rod (14mm x 1m)",       "required_quantity": 2},
+        {"motor_type": "3HP", "component_id": "comp_15", "component_name": "Earthing Pit",                   "required_quantity": 2},
+        {"motor_type": "3HP", "component_id": "comp_16", "component_name": "HDPE Pipe 63mm",                 "required_quantity": 30},
+        {"motor_type": "3HP", "component_id": "comp_18", "component_name": "Cable Tie",                      "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_19", "component_name": "35mm Sleeve",                    "required_quantity": 8},
+        {"motor_type": "3HP", "component_id": "comp_20", "component_name": "SS Nipple 2\"",                  "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_21", "component_name": "PP Rope 12mm",                   "required_quantity": 35},
+        {"motor_type": "3HP", "component_id": "comp_22", "component_name": "6 sq mm Ring Lugs",              "required_quantity": 4},
+        {"motor_type": "3HP", "component_id": "comp_23", "component_name": "Hose Clamp 2\"",                 "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_24", "component_name": "M6 x 50 GI Nut & Bolt",         "required_quantity": 3},
+        {"motor_type": "3HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt",         "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)",             "required_quantity": 2},
+        # 6MMS Structural
+        {"motor_type": "3HP", "component_id": "comp_28", "component_name": "Column Post (114mm OD)",         "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_29", "component_name": "Main Rafter (60x40mm)",          "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_30", "component_name": "Side Rafter (60x40mm)",          "required_quantity": 2},
+        {"motor_type": "3HP", "component_id": "comp_31", "component_name": "32x32 Tube (1900mm)",            "required_quantity": 3},
+        {"motor_type": "3HP", "component_id": "comp_32", "component_name": "32x32 Tube (1515mm)",            "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_33", "component_name": "Purlin (3480mm)",                "required_quantity": 4},
+        {"motor_type": "3HP", "component_id": "comp_34", "component_name": "Top Plate",                      "required_quantity": 1},
+        {"motor_type": "3HP", "component_id": "comp_35", "component_name": "Small Clamp",                    "required_quantity": 2},
+        {"motor_type": "3HP", "component_id": "comp_36", "component_name": "Big Clamp",                      "required_quantity": 2},
+        {"motor_type": "3HP", "component_id": "comp_37", "component_name": "Controller Clamp",               "required_quantity": 2},
+
+        # ════════════════════════════════════════════════════════
+        # 5HP — BOS (23) + 9MMS Structural (12) = 35 components
+        # ════════════════════════════════════════════════════════
+        {"motor_type": "5HP", "component_id": "comp_1",  "component_name": "Connector MC-4",                 "required_quantity": 4},
+        {"motor_type": "5HP", "component_id": "comp_2",  "component_name": "Bitumen Tape",                   "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_3",  "component_name": "Teflon Tape",                    "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_4",  "component_name": "PVC Electrical Insulation Tape", "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_5",  "component_name": "Cable Red (4 sq mm)",            "required_quantity": 5},
+        {"motor_type": "5HP", "component_id": "comp_6",  "component_name": "Cable Black (4 sq mm)",          "required_quantity": 5},
+        {"motor_type": "5HP", "component_id": "comp_8",  "component_name": "Earthing Cable (1.5m)",          "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_10", "component_name": "Arrestor Spike",                 "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_11", "component_name": "Arrestor Rod 14mm",              "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_12", "component_name": "Earthing Rod (14mm x 1m)",       "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_13", "component_name": "GI Pipe",                        "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_14", "component_name": "Earthing Patti",                 "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_15", "component_name": "Earthing Pit",                   "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_17", "component_name": "HDPE Pipe 75mm",                 "required_quantity": 30},
+        {"motor_type": "5HP", "component_id": "comp_18", "component_name": "Cable Tie",                      "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_19", "component_name": "35mm Sleeve",                    "required_quantity": 10},
+        {"motor_type": "5HP", "component_id": "comp_20", "component_name": "SS Nipple 2\"",                  "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_21", "component_name": "PP Rope 12mm",                   "required_quantity": 35},
+        {"motor_type": "5HP", "component_id": "comp_22", "component_name": "6 sq mm Ring Lugs",              "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_23", "component_name": "Hose Clamp 2\"",                 "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_24", "component_name": "M6 x 50 GI Nut & Bolt",         "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt",         "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)",             "required_quantity": 1},
+        # 9MMS Structural
+        {"motor_type": "5HP", "component_id": "comp_38", "component_name": "Column Post (139mm OD)",         "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_39", "component_name": "Main Rafter (80x40mm)",          "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_40", "component_name": "Side Rafter (80x40mm)",          "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_41", "component_name": "40x40 Tube (2245mm)",            "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_42", "component_name": "40x40 Tube (1900mm)",            "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_43", "component_name": "40x40 Tube (1515mm)",            "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_44", "component_name": "Purlin (4640mm)",                "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_45", "component_name": "Purlin (5800mm)",                "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_34", "component_name": "Top Plate",                      "required_quantity": 1},
+        {"motor_type": "5HP", "component_id": "comp_35", "component_name": "Small Clamp",                    "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_36", "component_name": "Big Clamp",                      "required_quantity": 2},
+        {"motor_type": "5HP", "component_id": "comp_37", "component_name": "Controller Clamp",               "required_quantity": 2},
+
+        # ════════════════════════════════════════════════════════
+        # 7.5HP — BOS (24) + Flat Cable + 13MMS Structural (11) = 36
+        # ════════════════════════════════════════════════════════
+        {"motor_type": "7.5HP", "component_id": "comp_1",  "component_name": "Connector MC-4",                 "required_quantity": 4},
+        {"motor_type": "7.5HP", "component_id": "comp_2",  "component_name": "Bitumen Tape",                   "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_3",  "component_name": "Teflon Tape",                    "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_4",  "component_name": "PVC Electrical Insulation Tape", "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_5",  "component_name": "Cable Red (4 sq mm)",            "required_quantity": 13},
+        {"motor_type": "7.5HP", "component_id": "comp_6",  "component_name": "Cable Black (4 sq mm)",          "required_quantity": 13},
+        {"motor_type": "7.5HP", "component_id": "comp_8",  "component_name": "Earthing Cable (1.5m)",          "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_10", "component_name": "Arrestor Spike",                 "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_11", "component_name": "Arrestor Rod 14mm",              "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_12", "component_name": "Earthing Rod (14mm x 1m)",       "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_13", "component_name": "GI Pipe",                        "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_14", "component_name": "Earthing Patti",                 "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_15", "component_name": "Earthing Pit",                   "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_17", "component_name": "HDPE Pipe 75mm",                 "required_quantity": 50},
+        {"motor_type": "7.5HP", "component_id": "comp_18", "component_name": "Cable Tie",                      "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_19", "component_name": "35mm Sleeve",                    "required_quantity": 26},
+        {"motor_type": "7.5HP", "component_id": "comp_20", "component_name": "SS Nipple 2\"",                  "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_21", "component_name": "PP Rope 12mm",                   "required_quantity": 55},
+        {"motor_type": "7.5HP", "component_id": "comp_22", "component_name": "6 sq mm Ring Lugs",              "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_23", "component_name": "Hose Clamp 2\"",                 "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_24", "component_name": "M6 x 50 GI Nut & Bolt",         "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt",         "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)",             "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_27", "component_name": "Flat Cable (4 sq mm)",           "required_quantity": 50},
+        # 13MMS Structural
+        {"motor_type": "7.5HP", "component_id": "comp_28", "component_name": "Column Post (114mm OD)",         "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_29", "component_name": "Main Rafter (60x40mm)",          "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_30", "component_name": "Side Rafter (60x40mm)",          "required_quantity": 4},
+        {"motor_type": "7.5HP", "component_id": "comp_31", "component_name": "32x32 Tube (1900mm)",            "required_quantity": 6},
+        {"motor_type": "7.5HP", "component_id": "comp_32", "component_name": "32x32 Tube (1515mm)",            "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_33", "component_name": "Purlin (3480mm)",                "required_quantity": 6},
+        {"motor_type": "7.5HP", "component_id": "comp_46", "component_name": "Purlin (4640mm) - 13MMS",       "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_34", "component_name": "Top Plate",                      "required_quantity": 1},
+        {"motor_type": "7.5HP", "component_id": "comp_35", "component_name": "Small Clamp",                    "required_quantity": 4},
+        {"motor_type": "7.5HP", "component_id": "comp_36", "component_name": "Big Clamp",                      "required_quantity": 4},
+        {"motor_type": "7.5HP", "component_id": "comp_37", "component_name": "Controller Clamp",               "required_quantity": 2},
+    ]
+
 
 async def seed_database():
     await db.motor_requirements.delete_many({})
-    
+
     count = await db.components.count_documents({})
-    if count > 0 and count < 59:
-        # Naye components add karo
+    if count > 0 and count < 46:
         existing_ids = [c['id'] for c in await db.components.find({}, {"_id": 0, "id": 1}).to_list(1000)]
         all_components = get_initial_components()
         new_components = [c for c in all_components if c['id'] not in existing_ids]
@@ -113,240 +269,26 @@ async def seed_database():
         for comp in components:
             comp['created_at'] = datetime.now(timezone.utc).isoformat()
         await db.components.insert_many(components)
-    
+
     motor_reqs = get_motor_requirements_data()
     if motor_reqs:
         await db.motor_requirements.insert_many(motor_reqs)
 
 
-def get_initial_components():
-    return [
-        {"id": "comp_1", "name": "Connector MC-4", "unit": "Set", "quantity": 200, "category": "Electrical"},
-        {"id": "comp_2", "name": "Bitumen Tape", "unit": "Nos", "quantity": 200, "category": "Accessories"},
-        {"id": "comp_3", "name": "Teflon Tape", "unit": "Nos", "quantity": 200, "category": "Accessories"},
-        {"id": "comp_4", "name": "PVC Electrical Insulation Tape", "unit": "Nos", "quantity": 200, "category": "Accessories"},
-        {"id": "comp_5", "name": "Cable Red (4 sq mm)", "unit": "Mtr", "quantity": 200, "category": "Electrical"},
-        {"id": "comp_6", "name": "Cable Black (4 sq mm)", "unit": "Mtr", "quantity": 200, "category": "Electrical"},
-        {"id": "comp_7", "name": "Flat Cable (3CX 2.5 sq mm)", "unit": "Mtr", "quantity": 200, "category": "Electrical"},
-        {"id": "comp_8", "name": "Earthing Cable (1.5m)", "unit": "Nos", "quantity": 200, "category": "Electrical"},
-        {"id": "comp_9", "name": "Lightning Arrestor Assembly", "unit": "Set", "quantity": 200, "category": "Safety"},
-        {"id": "comp_10", "name": "Arrestor Spike", "unit": "Set", "quantity": 200, "category": "Safety"},
-        {"id": "comp_11", "name": "Arrestor Rod 14mm", "unit": "Nos", "quantity": 200, "category": "Safety"},
-        {"id": "comp_12", "name": "Earthing Rod (14mm x 1m)", "unit": "Set", "quantity": 200, "category": "Safety"},
-        {"id": "comp_13", "name": "GI Pipe", "unit": "Nos", "quantity": 200, "category": "Plumbing"},
-        {"id": "comp_14", "name": "Earthing Patti", "unit": "Nos", "quantity": 200, "category": "Safety"},
-        {"id": "comp_15", "name": "Earthing Pit", "unit": "Nos", "quantity": 200, "category": "Safety"},
-        {"id": "comp_16", "name": "HDPE Pipe 63mm", "unit": "Mtr", "quantity": 200, "category": "Plumbing"},
-        {"id": "comp_17", "name": "HDPE Pipe 75mm", "unit": "Mtr", "quantity": 200, "category": "Plumbing"},
-        {"id": "comp_18", "name": "Cable Tie", "unit": "Pkt", "quantity": 200, "category": "Accessories"},
-        {"id": "comp_19", "name": "35mm Sleeve", "unit": "Mtr", "quantity": 200, "category": "Accessories"},
-        {"id": "comp_20", "name": "SS Nipple 2\"", "unit": "Nos", "quantity": 200, "category": "Plumbing"},
-        {"id": "comp_21", "name": "PP Rope 12mm", "unit": "Mtr", "quantity": 200, "category": "Accessories"},
-        {"id": "comp_22", "name": "6 sq mm Ring Lugs", "unit": "Nos", "quantity": 200, "category": "Electrical"},
-        {"id": "comp_23", "name": "Hose Clamp 2\"", "unit": "Nos", "quantity": 200, "category": "Plumbing"},
-        {"id": "comp_24", "name": "M6 x 50 GI Nut & Bolt", "unit": "Nos", "quantity": 200, "category": "Hardware"},
-        {"id": "comp_25", "name": "M8 x 75 SS Nut & Bolt", "unit": "Nos", "quantity": 200, "category": "Hardware"},
-        {"id": "comp_26", "name": "Chemical Bag (5kg)", "unit": "Bag", "quantity": 200, "category": "Accessories"},
-        # MMS Components (comp_27 se start)
-{"id": "comp_27", "name": "Column Post (114mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_28", "name": "Main Rafter (60x40mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_29", "name": "Side Rafter (60x40mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_30", "name": "32x32 Tube (1900mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_31", "name": "32x32 Tube (1515mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_32", "name": "Purlin (3480mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_33", "name": "Top Plate", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_34", "name": "Small Clamp", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_35", "name": "Big Clamp", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_36", "name": "Controller Clamp", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_37", "name": "M6x25 Anti Theft Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_38", "name": "M6 Nut", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_39", "name": "M6 Washer", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_40", "name": "M6 Spring Washer", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_41", "name": "M16x100 Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_42", "name": "M16x50 Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_43", "name": "M10x75 Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_44", "name": "M10x25/30 Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_45", "name": "M10 Nut", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_46", "name": "M16 Nut", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_47", "name": "M6x30 Bolt", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_48", "name": "M6 Washer (6OD)", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_49", "name": "M10 Washer", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_50", "name": "M16 Washer", "unit": "Nos", "quantity": 200, "category": "MMS Hardware"},
-{"id": "comp_51", "name": "Column Post (139mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_52", "name": "Main Rafter (80x40mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_53", "name": "Side Rafter (80x40mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_54", "name": "40x40 Tube (2245mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_55", "name": "40x40 Tube (1900mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_56", "name": "40x40 Tube (1515mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_57", "name": "Purlin (4640mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_58", "name": "Purlin (5800mm)", "unit": "Nos", "quantity": 200, "category": "MMS"},
-{"id": "comp_59", "name": "Flat Cable (4 sq mm)", "unit": "Mtr", "quantity": 200, "category": "Electrical"},
-    ]
-
-
-def get_motor_requirements_data():
-    # Motor requirements based on PDFs
-    motor_requirements = [
-        # 3HP Requirements (from 3HP-30M BOS Packing List.pdf)
-        {"motor_type": "3HP", "component_id": "comp_1", "component_name": "Connector MC-4", "required_quantity": 4},
-        {"motor_type": "3HP", "component_id": "comp_2", "component_name": "Bitumen Tape", "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_3", "component_name": "Teflon Tape", "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_4", "component_name": "PVC Electrical Insulation Tape", "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_5", "component_name": "Cable Red (4 sq mm)", "required_quantity": 4},
-        {"motor_type": "3HP", "component_id": "comp_6", "component_name": "Cable Black (4 sq mm)", "required_quantity": 4},
-        {"motor_type": "3HP", "component_id": "comp_7", "component_name": "Flat Cable (3CX 2.5 sq mm)", "required_quantity": 30},
-        {"motor_type": "3HP", "component_id": "comp_8", "component_name": "Earthing Cable (1.5m)", "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_9", "component_name": "Lightning Arrestor Assembly", "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_12", "component_name": "Earthing Rod (14mm x 1m)", "required_quantity": 2},
-        {"motor_type": "3HP", "component_id": "comp_15", "component_name": "Earthing Pit", "required_quantity": 2},
-        {"motor_type": "3HP", "component_id": "comp_16", "component_name": "HDPE Pipe 63mm", "required_quantity": 30},
-        {"motor_type": "3HP", "component_id": "comp_18", "component_name": "Cable Tie", "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_19", "component_name": "35mm Sleeve", "required_quantity": 8},
-        {"motor_type": "3HP", "component_id": "comp_20", "component_name": "SS Nipple 2\"", "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_21", "component_name": "PP Rope 12mm", "required_quantity": 35},
-        {"motor_type": "3HP", "component_id": "comp_22", "component_name": "6 sq mm Ring Lugs", "required_quantity": 4},
-        {"motor_type": "3HP", "component_id": "comp_23", "component_name": "Hose Clamp 2\"", "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_24", "component_name": "M6 x 50 GI Nut & Bolt", "required_quantity": 3},
-        {"motor_type": "3HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt", "required_quantity": 1},
-        {"motor_type": "3HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)", "required_quantity": 2},
-        {"motor_type": "3HP", "component_id": "comp_27", "component_name": "Column Post (114mm)", "required_quantity": 1},
-{"motor_type": "3HP", "component_id": "comp_28", "component_name": "Main Rafter (60x40mm)", "required_quantity": 1},
-{"motor_type": "3HP", "component_id": "comp_29", "component_name": "Side Rafter (60x40mm)", "required_quantity": 2},
-{"motor_type": "3HP", "component_id": "comp_30", "component_name": "32x32 Tube (1900mm)", "required_quantity": 3},
-{"motor_type": "3HP", "component_id": "comp_31", "component_name": "32x32 Tube (1515mm)", "required_quantity": 1},
-{"motor_type": "3HP", "component_id": "comp_32", "component_name": "Purlin (3480mm)", "required_quantity": 4},
-{"motor_type": "3HP", "component_id": "comp_33", "component_name": "Top Plate", "required_quantity": 1},
-{"motor_type": "3HP", "component_id": "comp_34", "component_name": "Small Clamp", "required_quantity": 2},
-{"motor_type": "3HP", "component_id": "comp_35", "component_name": "Big Clamp", "required_quantity": 2},
-{"motor_type": "3HP", "component_id": "comp_36", "component_name": "Controller Clamp", "required_quantity": 2},
-{"motor_type": "3HP", "component_id": "comp_37", "component_name": "M6x25 Anti Theft Bolt", "required_quantity": 24},
-{"motor_type": "3HP", "component_id": "comp_38", "component_name": "M6 Nut", "required_quantity": 24},
-{"motor_type": "3HP", "component_id": "comp_39", "component_name": "M6 Washer", "required_quantity": 48},
-{"motor_type": "3HP", "component_id": "comp_40", "component_name": "M6 Spring Washer", "required_quantity": 48},
-{"motor_type": "3HP", "component_id": "comp_41", "component_name": "M16x100 Bolt", "required_quantity": 2},
-{"motor_type": "3HP", "component_id": "comp_42", "component_name": "M16x50 Bolt", "required_quantity": 4},
-{"motor_type": "3HP", "component_id": "comp_43", "component_name": "M10x75 Bolt", "required_quantity": 12},
-{"motor_type": "3HP", "component_id": "comp_44", "component_name": "M10x25/30 Bolt", "required_quantity": 24},
-{"motor_type": "3HP", "component_id": "comp_45", "component_name": "M10 Nut", "required_quantity": 36},
-{"motor_type": "3HP", "component_id": "comp_46", "component_name": "M16 Nut", "required_quantity": 6},
-{"motor_type": "3HP", "component_id": "comp_47", "component_name": "M6x30 Bolt", "required_quantity": 8},
-{"motor_type": "3HP", "component_id": "comp_48", "component_name": "M6 Washer (6OD)", "required_quantity": 16},
-{"motor_type": "3HP", "component_id": "comp_49", "component_name": "M10 Washer", "required_quantity": 72},
-{"motor_type": "3HP", "component_id": "comp_50", "component_name": "M16 Washer", "required_quantity": 12},
-
-        
-        # 5HP Requirements (from 5HP-30M BOS Packing List.pdf)
-        {"motor_type": "5HP", "component_id": "comp_1", "component_name": "Connector MC-4", "required_quantity": 4},
-        {"motor_type": "5HP", "component_id": "comp_2", "component_name": "Bitumen Tape", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_3", "component_name": "Teflon Tape", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_4", "component_name": "PVC Electrical Insulation Tape", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_5", "component_name": "Cable Red (4 sq mm)", "required_quantity": 5},
-        {"motor_type": "5HP", "component_id": "comp_6", "component_name": "Cable Black (4 sq mm)", "required_quantity": 5},
-        {"motor_type": "5HP", "component_id": "comp_8", "component_name": "Earthing Cable (1.5m)", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_10", "component_name": "Arrestor Spike", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_11", "component_name": "Arrestor Rod 14mm", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_12", "component_name": "Earthing Rod (14mm x 1m)", "required_quantity": 2},
-        {"motor_type": "5HP", "component_id": "comp_13", "component_name": "GI Pipe", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_14", "component_name": "Earthing Patti", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_15", "component_name": "Earthing Pit", "required_quantity": 2},
-        {"motor_type": "5HP", "component_id": "comp_17", "component_name": "HDPE Pipe 75mm", "required_quantity": 30},
-        {"motor_type": "5HP", "component_id": "comp_18", "component_name": "Cable Tie", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_19", "component_name": "35mm Sleeve", "required_quantity": 10},
-        {"motor_type": "5HP", "component_id": "comp_20", "component_name": "SS Nipple 2\"", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_21", "component_name": "PP Rope 12mm", "required_quantity": 35},
-        {"motor_type": "5HP", "component_id": "comp_22", "component_name": "6 sq mm Ring Lugs", "required_quantity": 2},
-        {"motor_type": "5HP", "component_id": "comp_23", "component_name": "Hose Clamp 2\"", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_24", "component_name": "M6 x 50 GI Nut & Bolt", "required_quantity": 2},
-        {"motor_type": "5HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)", "required_quantity": 1},
-        {"motor_type": "5HP", "component_id": "comp_51", "component_name": "Column Post (139mm)", "required_quantity": 1},
-{"motor_type": "5HP", "component_id": "comp_52", "component_name": "Main Rafter (80x40mm)", "required_quantity": 1},
-{"motor_type": "5HP", "component_id": "comp_53", "component_name": "Side Rafter (80x40mm)", "required_quantity": 2},
-{"motor_type": "5HP", "component_id": "comp_54", "component_name": "40x40 Tube (2245mm)", "required_quantity": 2},
-{"motor_type": "5HP", "component_id": "comp_55", "component_name": "40x40 Tube (1900mm)", "required_quantity": 1},
-{"motor_type": "5HP", "component_id": "comp_56", "component_name": "40x40 Tube (1515mm)", "required_quantity": 1},
-{"motor_type": "5HP", "component_id": "comp_57", "component_name": "Purlin (4640mm)", "required_quantity": 2},
-{"motor_type": "5HP", "component_id": "comp_58", "component_name": "Purlin (5800mm)", "required_quantity": 2},
-{"motor_type": "5HP", "component_id": "comp_33", "component_name": "Top Plate", "required_quantity": 1},
-{"motor_type": "5HP", "component_id": "comp_34", "component_name": "Small Clamp", "required_quantity": 2},
-{"motor_type": "5HP", "component_id": "comp_35", "component_name": "Big Clamp", "required_quantity": 2},
-{"motor_type": "5HP", "component_id": "comp_36", "component_name": "Controller Clamp", "required_quantity": 2},
-{"motor_type": "5HP", "component_id": "comp_37", "component_name": "M6x25 Anti Theft Bolt", "required_quantity": 36},
-{"motor_type": "5HP", "component_id": "comp_38", "component_name": "M6 Nut", "required_quantity": 36},
-{"motor_type": "5HP", "component_id": "comp_39", "component_name": "M6 Washer", "required_quantity": 72},
-{"motor_type": "5HP", "component_id": "comp_40", "component_name": "M6 Spring Washer", "required_quantity": 36},
-{"motor_type": "5HP", "component_id": "comp_41", "component_name": "M16x100 Bolt", "required_quantity": 2},
-{"motor_type": "5HP", "component_id": "comp_42", "component_name": "M16x50 Bolt", "required_quantity": 4},
-{"motor_type": "5HP", "component_id": "comp_43", "component_name": "M10x75 Bolt", "required_quantity": 12},
-{"motor_type": "5HP", "component_id": "comp_44", "component_name": "M10x25/30 Bolt", "required_quantity": 24},
-{"motor_type": "5HP", "component_id": "comp_45", "component_name": "M10 Nut", "required_quantity": 36},
-{"motor_type": "5HP", "component_id": "comp_46", "component_name": "M16 Nut", "required_quantity": 6},
-{"motor_type": "5HP", "component_id": "comp_47", "component_name": "M6x30 Bolt", "required_quantity": 8},
-{"motor_type": "5HP", "component_id": "comp_48", "component_name": "M6 Washer (6OD)", "required_quantity": 16},
-{"motor_type": "5HP", "component_id": "comp_49", "component_name": "M10 Washer", "required_quantity": 72},
-{"motor_type": "5HP", "component_id": "comp_50", "component_name": "M16 Washer", "required_quantity": 12},
-        
-        # 7.5HP Requirements (from 7.5HP-50M BOS Packing List.pdf)
-        {"motor_type": "7.5HP", "component_id": "comp_1", "component_name": "Connector MC-4", "required_quantity": 4},
-        {"motor_type": "7.5HP", "component_id": "comp_2", "component_name": "Bitumen Tape", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_3", "component_name": "Teflon Tape", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_4", "component_name": "PVC Electrical Insulation Tape", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_5", "component_name": "Cable Red (4 sq mm)", "required_quantity": 13},
-        {"motor_type": "7.5HP", "component_id": "comp_6", "component_name": "Cable Black (4 sq mm)", "required_quantity": 13},
-        {"motor_type": "7.5HP", "component_id": "comp_8", "component_name": "Earthing Cable (1.5m)", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_10", "component_name": "Arrestor Spike", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_11", "component_name": "Arrestor Rod 14mm", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_12", "component_name": "Earthing Rod (14mm x 1m)", "required_quantity": 2},
-        {"motor_type": "7.5HP", "component_id": "comp_13", "component_name": "GI Pipe", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_14", "component_name": "Earthing Patti", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_15", "component_name": "Earthing Pit", "required_quantity": 2},
-        {"motor_type": "7.5HP", "component_id": "comp_17", "component_name": "HDPE Pipe 75mm", "required_quantity": 50},
-        {"motor_type": "7.5HP", "component_id": "comp_18", "component_name": "Cable Tie", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_19", "component_name": "35mm Sleeve", "required_quantity": 26},
-        {"motor_type": "7.5HP", "component_id": "comp_20", "component_name": "SS Nipple 2\"", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_21", "component_name": "PP Rope 12mm", "required_quantity": 55},
-        {"motor_type": "7.5HP", "component_id": "comp_22", "component_name": "6 sq mm Ring Lugs", "required_quantity": 2},
-        {"motor_type": "7.5HP", "component_id": "comp_23", "component_name": "Hose Clamp 2\"", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_24", "component_name": "M6 x 50 GI Nut & Bolt", "required_quantity": 2},
-        {"motor_type": "7.5HP", "component_id": "comp_25", "component_name": "M8 x 75 SS Nut & Bolt", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_26", "component_name": "Chemical Bag (5kg)", "required_quantity": 1},
-        {"motor_type": "7.5HP", "component_id": "comp_27", "component_name": "Column Post (114mm)", "required_quantity": 2},
-{"motor_type": "7.5HP", "component_id": "comp_28", "component_name": "Main Rafter (60x40mm)", "required_quantity": 2},
-{"motor_type": "7.5HP", "component_id": "comp_29", "component_name": "Side Rafter (60x40mm)", "required_quantity": 4},
-{"motor_type": "7.5HP", "component_id": "comp_30", "component_name": "32x32 Tube (1900mm)", "required_quantity": 6},
-{"motor_type": "7.5HP", "component_id": "comp_31", "component_name": "32x32 Tube (1515mm)", "required_quantity": 2},
-{"motor_type": "7.5HP", "component_id": "comp_32", "component_name": "Purlin (3480mm)", "required_quantity": 6},
-{"motor_type": "7.5HP", "component_id": "comp_57", "component_name": "Purlin (4640mm)", "required_quantity": 2},
-{"motor_type": "7.5HP", "component_id": "comp_33", "component_name": "Top Plate", "required_quantity": 1},
-{"motor_type": "7.5HP", "component_id": "comp_34", "component_name": "Small Clamp", "required_quantity": 4},
-{"motor_type": "7.5HP", "component_id": "comp_35", "component_name": "Big Clamp", "required_quantity": 4},
-{"motor_type": "7.5HP", "component_id": "comp_36", "component_name": "Controller Clamp", "required_quantity": 2},
-{"motor_type": "7.5HP", "component_id": "comp_37", "component_name": "M6x25 Anti Theft Bolt", "required_quantity": 52},
-{"motor_type": "7.5HP", "component_id": "comp_38", "component_name": "M6 Nut", "required_quantity": 52},
-{"motor_type": "7.5HP", "component_id": "comp_39", "component_name": "M6 Washer", "required_quantity": 104},
-{"motor_type": "7.5HP", "component_id": "comp_40", "component_name": "M6 Spring Washer", "required_quantity": 52},
-{"motor_type": "7.5HP", "component_id": "comp_41", "component_name": "M16x100 Bolt", "required_quantity": 4},
-{"motor_type": "7.5HP", "component_id": "comp_42", "component_name": "M16x50 Bolt", "required_quantity": 8},
-{"motor_type": "7.5HP", "component_id": "comp_43", "component_name": "M10x75 Bolt", "required_quantity": 24},
-{"motor_type": "7.5HP", "component_id": "comp_44", "component_name": "M10x25/30 Bolt", "required_quantity": 48},
-{"motor_type": "7.5HP", "component_id": "comp_45", "component_name": "M10 Nut", "required_quantity": 72},
-{"motor_type": "7.5HP", "component_id": "comp_46", "component_name": "M16 Nut", "required_quantity": 12},
-{"motor_type": "7.5HP", "component_id": "comp_47", "component_name": "M6x30 Bolt", "required_quantity": 16},
-{"motor_type": "7.5HP", "component_id": "comp_48", "component_name": "M6 Washer (6OD)", "required_quantity": 32},
-{"motor_type": "7.5HP", "component_id": "comp_49", "component_name": "M10 Washer", "required_quantity": 154},
-{"motor_type": "7.5HP", "component_id": "comp_50", "component_name": "M16 Washer", "required_quantity": 24},
-    ]
-    return motor_requirements
-
+# ─── Startup / Shutdown ───────────────────────────────────────────────────────
 
 @app.on_event("startup")
 async def startup_event():
-    # Clear and reseed motor requirements on every startup
     await db.motor_requirements.delete_many({})
     await seed_database()
 
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    client.close()
 
-# API Routes
+
+# ─── API Routes ───────────────────────────────────────────────────────────────
+
 @api_router.get("/")
 async def root():
     return {"message": "Solar Pump Inventory Management System API"}
@@ -367,10 +309,8 @@ async def update_component(component_id: str, update: ComponentUpdate):
         {"id": component_id},
         {"$set": {"quantity": update.quantity}}
     )
-    
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Component not found")
-    
     component = await db.components.find_one({"id": component_id}, {"_id": 0})
     if component and isinstance(component['created_at'], str):
         component['created_at'] = datetime.fromisoformat(component['created_at'])
@@ -387,41 +327,36 @@ async def get_motor_requirements():
 async def calculate_max_production():
     components = await db.components.find({}, {"_id": 0}).to_list(1000)
     requirements = await db.motor_requirements.find({}, {"_id": 0}).to_list(1000)
-    
-    # Create component lookup
+
     component_map = {comp['id']: comp['quantity'] for comp in components}
     component_name_map = {comp['id']: comp['name'] for comp in components}
-    
-    # Group requirements by motor type
+
     motor_types = ['3HP', '5HP', '7.5HP']
     max_production = {}
     critical_components = {}
-    
+
     for motor_type in motor_types:
         motor_reqs = [r for r in requirements if r['motor_type'] == motor_type]
-        
         if not motor_reqs:
             max_production[motor_type] = 0
             critical_components[motor_type] = None
             continue
-        
-        # Calculate max motors based on minimum ratio and find critical component
+
         max_motors = float('inf')
         critical_comp_id = None
-        
+
         for req in motor_reqs:
             available = component_map.get(req['component_id'], 0)
             required = req['required_quantity']
-            
             if required > 0:
                 possible = int(available // required)
                 if possible < max_motors:
                     max_motors = possible
                     critical_comp_id = req['component_id']
-        
+
         max_production[motor_type] = max_motors if max_motors != float('inf') else 0
         critical_components[motor_type] = component_name_map.get(critical_comp_id) if critical_comp_id else None
-    
+
     return {
         "production": max_production,
         "critical_components": critical_components
@@ -432,20 +367,17 @@ async def calculate_max_production():
 async def withdraw_components(request: WithdrawRequest):
     if request.quantity <= 0:
         raise HTTPException(status_code=400, detail="Quantity must be positive")
-    
-    # Get requirements for this motor type
+
     requirements = await db.motor_requirements.find(
-        {"motor_type": request.motor_type},
-        {"_id": 0}
+        {"motor_type": request.motor_type}, {"_id": 0}
     ).to_list(1000)
-    
+
     if not requirements:
         raise HTTPException(status_code=404, detail="Motor type not found")
-    
-    # Check if withdrawal is possible
+
     components = await db.components.find({}, {"_id": 0}).to_list(1000)
     component_map = {comp['id']: comp for comp in components}
-    
+
     insufficient = []
     for req in requirements:
         comp = component_map.get(req['component_id'])
@@ -458,22 +390,29 @@ async def withdraw_components(request: WithdrawRequest):
                     "available": comp['quantity'],
                     "shortage": needed - comp['quantity']
                 })
-    
+
     if insufficient:
         return {
             "success": False,
             "message": "Insufficient components",
             "insufficient_components": insufficient
         }
-    
-    # Perform withdrawal
+
     for req in requirements:
         needed = req['required_quantity'] * request.quantity
         await db.components.update_one(
             {"id": req['component_id']},
             {"$inc": {"quantity": -needed}}
         )
-    
+
+    # Auto record usage
+    await db.usage_history.insert_one({
+        "motor_type": request.motor_type,
+        "quantity": request.quantity,
+        "date": datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+        "recorded_at": datetime.now(timezone.utc).isoformat()
+    })
+
     return {
         "success": True,
         "message": f"Successfully withdrawn components for {request.quantity} x {request.motor_type} motors"
@@ -484,28 +423,24 @@ async def withdraw_components(request: WithdrawRequest):
 async def check_feasibility(request: FeasibilityRequest):
     if request.hp_3 < 0 or request.hp_5 < 0 or request.hp_7_5 < 0:
         raise HTTPException(status_code=400, detail="Quantities cannot be negative")
-    
-    # Get all requirements
+
     requirements = await db.motor_requirements.find({}, {"_id": 0}).to_list(1000)
     components = await db.components.find({}, {"_id": 0}).to_list(1000)
-    
-    # Calculate total needed for each component
+
     component_map = {comp['id']: comp['quantity'] for comp in components}
     total_needed = {}
-    
+
     for req in requirements:
         comp_id = req['component_id']
         if comp_id not in total_needed:
             total_needed[comp_id] = {"name": req['component_name'], "quantity": 0}
-        
         if req['motor_type'] == '3HP':
             total_needed[comp_id]['quantity'] += req['required_quantity'] * request.hp_3
         elif req['motor_type'] == '5HP':
             total_needed[comp_id]['quantity'] += req['required_quantity'] * request.hp_5
         elif req['motor_type'] == '7.5HP':
             total_needed[comp_id]['quantity'] += req['required_quantity'] * request.hp_7_5
-    
-    # Check availability
+
     missing = []
     for comp_id, needed_info in total_needed.items():
         available = component_map.get(comp_id, 0)
@@ -516,14 +451,14 @@ async def check_feasibility(request: FeasibilityRequest):
                 "available": available,
                 "shortage": needed_info['quantity'] - available
             })
-    
+
     if missing:
         return FeasibilityResponse(
             possible=False,
             message="Not Possible - Insufficient components",
             missing_components=missing
         )
-    
+
     return FeasibilityResponse(
         possible=True,
         message="Possible - All components available",
@@ -531,13 +466,8 @@ async def check_feasibility(request: FeasibilityRequest):
     )
 
 
-# Usage Tracking Model
-class UsageRecord(BaseModel):
-    motor_type: str
-    quantity: int
-    date: str = Field(default_factory=lambda: datetime.now(timezone.utc).strftime('%Y-%m-%d'))
+# ─── Usage Tracking ───────────────────────────────────────────────────────────
 
-# Usage Tracking APIs
 @api_router.post("/usage/record")
 async def record_usage(record: UsageRecord):
     usage_doc = {
@@ -547,18 +477,16 @@ async def record_usage(record: UsageRecord):
         "recorded_at": datetime.now(timezone.utc).isoformat()
     }
     await db.usage_history.insert_one(usage_doc)
-    
+
     # Keep only last 5 days
-    five_days_ago = (datetime.now(timezone.utc).date().__str__())
     all_records = await db.usage_history.find({}, {"_id": 0}).sort("date", -1).to_list(1000)
     unique_dates = sorted(set(r['date'] for r in all_records), reverse=True)
-    
     if len(unique_dates) > 5:
-        dates_to_delete = unique_dates[5:]
-        for d in dates_to_delete:
+        for d in unique_dates[5:]:
             await db.usage_history.delete_many({"date": d})
-    
+
     return {"success": True, "message": "Usage recorded"}
+
 
 @api_router.get("/usage/history")
 async def get_usage_history():
@@ -566,7 +494,8 @@ async def get_usage_history():
     return records
 
 
-# Include the router in the main app
+# ─── App Setup ────────────────────────────────────────────────────────────────
+
 app.include_router(api_router)
 
 app.add_middleware(
@@ -577,13 +506,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
