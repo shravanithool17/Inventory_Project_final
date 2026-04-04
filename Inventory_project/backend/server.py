@@ -235,6 +235,7 @@ def get_motor_requirements_data():
         {"motor_type": "7.5HP", "component_id": "comp_35", "component_name": "Small Clamp", "required_quantity": 4},
         {"motor_type": "7.5HP", "component_id": "comp_36", "component_name": "Big Clamp", "required_quantity": 4},
         {"motor_type": "7.5HP", "component_id": "comp_37", "component_name": "Controller Clamp", "required_quantity": 2},
+        {"motor_type": "7.5HP", "component_id": "comp_38", "component_name": "Flat Cable (3CX 4sq mm)", "required_quantity": 30},
     ]
     return motor_requirements
 
